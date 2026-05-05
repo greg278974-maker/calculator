@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>Штаб Тренера · Юниты</title>
+    <title>Штаб Тренера · Счётчик</title>
     <style>
         * {
             margin: 0;
@@ -83,7 +83,7 @@
         }
 
         .calc-body {
-            padding: 28px 28px 36px;
+            padding: 28px 28px 20px;
         }
 
         .price-row {
@@ -264,16 +264,35 @@
             color: #9ea3c2;
         }
 
+        /* Подвал со счётчиком */
+        .footer {
+            padding: 16px 28px 20px;
+            border-top: 1px solid rgba(255,255,255,0.06);
+            text-align: center;
+            font-size: 0.75rem;
+            color: #7a80a0;
+        }
+
+        .counter {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.03);
+            padding: 6px 14px;
+            border-radius: 40px;
+        }
+
         @media (max-width: 700px) {
             body { padding: 16px; }
             .calc-header { padding: 20px 18px; }
             .calc-header h1 { font-size: 1.4rem; }
-            .calc-body { padding: 20px 18px 28px; }
+            .calc-body { padding: 20px 18px 16px; }
             .stats-grid { grid-template-columns: 1fr; gap: 16px; margin: 20px 0 16px; }
             .final-cost { font-size: 1.4rem; }
             .flags { gap: 12px; }
             .flag { font-size: 1.6rem; }
             .price-row { grid-template-columns: 1fr; gap: 16px; }
+            .footer { padding: 12px 18px 16px; }
         }
     </style>
 </head>
@@ -342,9 +361,36 @@
             </div>
         </div>
     </div>
+
+    <!-- Подвал со счётчиком -->
+    <div class="footer">
+        <div class="counter">
+            <span>👁️</span>
+            <span id="visitCounter">—</span>
+            <span>уникальных посетителей</span>
+        </div>
+    </div>
 </div>
 
 <script>
+    // ==================== ПОЛУЧЕНИЕ СЧЁТЧИКА ====================
+    async function updateCounter() {
+        const namespace = "trainer_hq";
+        const key = "visitors";
+        const url = `https://api.countapi.xyz/hit/${namespace}/${key}`;
+        
+        try {
+            const response = await fetch(url);
+            const data = await response.json();
+            if (data && data.value !== undefined) {
+                document.getElementById('visitCounter').innerText = data.value.toLocaleString('ru-RU');
+            }
+        } catch (e) {
+            console.warn("Счётчик не загрузился", e);
+            document.getElementById('visitCounter').innerText = "❤️";
+        }
+    }
+    
     // ==================== ПЕРЕВОДЫ ====================
     const translations = {
         ru: {
@@ -571,6 +617,7 @@
     
     setLanguage('ru');
     update();
+    updateCounter();
 </script>
 </body>
 </html>

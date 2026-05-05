@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>Штаб Тренера · Юниты</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            background:
+                radial-gradient(circle at 20% 20%, #1a1f3a, transparent 40%),
+                radial-gradient(circle at 80% 0%, #2a1f3a, transparent 35%),
+                #06070d;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Inter', 'SF Pro Display', sans-serif;
+            padding: 24px;
+            color: #e8ecff;
+        }
+
+        .calc {
+            max-width: 1000px;
+            width: 100%;
+            background: rgba(20, 24, 40, 0.65);
+            backdrop-filter: blur(18px);
+            border-radius: 28px;
+            border: 1px solid rgba(255,255,255,0.08);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.6), inset 0 0 40px rgba(255,255,255,0.03);
+        }
+
+        .calc-header {
+            padding: 24px 28px 20px;
+            text-align: center;
+            background: linear-gradient(180deg, rgba(255,255,255,0.05), transparent);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .calc-header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            background: linear-gradient(90deg, #c0c8e0, #e8ecff, #c0c8e0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+        }
+
+        .flags {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 12px;
+            margin-bottom: 8px;
+        }
+
+        .flag {
+            font-size: 2.2rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            filter: grayscale(0.4);
+            opacity: 0.7;
+        }
+
+        .flag:hover {
+            transform: scale(1.15);
+            filter: grayscale(0);
+            opacity: 1;
+        }
+
+        .flag.active {
+            filter: grayscale(0);
+            opacity: 1;
+            transform: scale(1.08);
+            text-shadow: 0 0 8px rgba(255,255,255,0.5);
+        }
+
+        .calc-body {
+            padding: 28px 28px 36px;
+        }
+
+        .price-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .field {
+            margin-bottom: 24px;
+        }
+
+        .field-label {
+            font-size: 0.85rem;
+            letter-spacing: 1.5px;
+            color: rgba(255,255,255,0.6);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        input {
+            width: 100%;
+            background: rgba(10,12,20,0.8);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 16px 20px;
+            font-size: 1.2rem;
+            color: #fff;
+            text-align: center;
+            transition: all 0.25s ease;
+            outline: none;
+            font-family: monospace;
+        }
+
+        input:focus {
+            border-color: #a0a8c0;
+            box-shadow: 0 0 0 2px rgba(160,168,192,0.2), 0 0 12px rgba(160,168,192,0.4);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+            margin: 28px 0 24px;
+        }
+
+        .stat-card {
+            background: rgba(15,18,30,0.7);
+            border-radius: 24px;
+            padding: 20px 18px;
+            border: 1px solid rgba(255,255,255,0.06);
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+
+        .stat-title {
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #aeb4d0;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 14px;
+            font-size: 0.95rem;
+            color: #cbcfeb;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .stat-value {
+            font-weight: 600;
+            font-size: 1rem;
+            color: #fff;
+            font-family: monospace;
+        }
+
+        .silver-value,
+        .big-silver {
+            background: linear-gradient(90deg, #b8c0dc, #e0e4f5);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+        }
+
+        .big-silver {
+            font-size: 1.5rem;
+        }
+
+        .trainer-panel {
+            background: rgba(10,12,22,0.7);
+            border-radius: 24px;
+            border: 1px solid rgba(255,255,255,0.06);
+            padding: 22px 24px;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .flex-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+            gap: 14px;
+        }
+
+        .percent-control {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(0,0,0,0.5);
+            padding: 5px 22px;
+            border-radius: 40px;
+            border: 1px solid rgba(160,168,192,0.4);
+        }
+
+        .percent-input {
+            width: 85px;
+            background: transparent;
+            border: none;
+            padding: 8px 0;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #c8d0e8;
+            text-align: center;
+            outline: none;
+        }
+
+        hr {
+            border: none;
+            border-top: 1px solid rgba(255,255,255,0.08);
+            margin: 16px 0;
+        }
+
+        .total-glow {
+            background: linear-gradient(145deg, rgba(160,168,192,0.1), rgba(255,255,255,0.02));
+            border: 1px solid rgba(160,168,192,0.3);
+            border-radius: 22px;
+            padding: 16px 20px;
+            margin-top: 10px;
+            box-shadow: 0 0 25px rgba(160,168,192,0.15), inset 0 0 10px rgba(160,168,192,0.05);
+        }
+
+        .final-cost {
+            font-size: 1.9rem;
+            font-weight: 800;
+            background: linear-gradient(90deg, #fff, #e0e4f5, #fff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: glowPulse 2s infinite alternate;
+        }
+
+        @keyframes glowPulse {
+            from { text-shadow: 0 0 5px rgba(255,255,255,0.2); }
+            to { text-shadow: 0 0 18px rgba(200,210,240,0.6); }
+        }
+
+        .gray-text {
+            color: #9ea3c2;
+        }
+
+        @media (max-width: 700px) {
+            body { padding: 16px; }
+            .calc-header { padding: 20px 18px; }
+            .calc-header h1 { font-size: 1.4rem; }
+            .calc-body { padding: 20px 18px 28px; }
+            .stats-grid { grid-template-columns: 1fr; gap: 16px; margin: 20px 0 16px; }
+            .final-cost { font-size: 1.4rem; }
+            .flags { gap: 12px; }
+            .flag { font-size: 1.6rem; }
+            .price-row { grid-template-columns: 1fr; gap: 16px; }
+        }
+    </style>
+</head>
+<body>
+<div class="calc">
+    <div class="calc-header">
+        <h1 id="title">✦ ШТАБ ТРЕНЕРА ✦</h1>
+        <div class="flags" id="flags">
+            <span class="flag active" data-lang="ru">🇷🇺</span>
+            <span class="flag" data-lang="en">🇬🇧</span>
+            <span class="flag" data-lang="es">🇪🇸</span>
+            <span class="flag" data-lang="it">🇮🇹</span>
+            <span class="flag" data-lang="fr">🇫🇷</span>
+            <span class="flag" data-lang="de">🇩🇪</span>
+            <span class="flag" data-lang="bg">🇧🇬</span>
+        </div>
+    </div>
+    <div class="calc-body">
+        <div class="field">
+            <div class="field-label"><span>⚔️</span> <span id="labelArmy">ЮНИТОВ НА 1 УДАР</span></div>
+            <input type="number" id="armyInput" value="120000" step="1000">
+        </div>
+
+        <div class="price-row">
+            <div class="field">
+                <div class="field-label"><span>🪙</span> <span id="labelBuyPrice">ЦЕНА ПОКУПКИ 1 ЮНИТА</span></div>
+                <input type="number" id="buyPrice" value="760" step="10">
+            </div>
+            <div class="field">
+                <div class="field-label"><span>💀</span> <span id="labelRezPrice">ЦЕНА ВОСКРЕШЕНИЯ 1 ЮНИТА</span></div>
+                <input type="number" id="rezPrice" value="14" step="1">
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-title"><span>📉</span> <span id="titleLosses">ТРЕНЕР · ПОТЕРИ</span></div>
+                <div class="stat-row"><span id="lossPerRoundLabel">Потери за 1 раунд</span><span class="stat-value" id="lossPerRound">0</span></div>
+                <div class="stat-row"><span id="lossesForBuildLabel">За 10 раундов (для постройки)</span><span class="stat-value" id="totalLossesForBuild">0</span></div>
+                <div class="stat-row"><span id="lossesForRezLabel">За 11 раундов (для воскрешения)</span><span class="stat-value" id="totalLosses11">0</span></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title"><span>🐎</span> <span id="titleRestore">ТРЕНЕР · ВОССТАНОВЛЕНИЕ</span></div>
+                <div class="stat-row"><span id="needToBuildLabel">Нужно построить</span><span class="big-silver" id="trainerNeed">0</span></div>
+                <div class="stat-row"><span id="buyCostLabel">Стоимость покупки</span><span class="silver-value" id="trainerBaseCostBuy">0</span></div>
+                <div class="stat-row"><span id="rezCostLabel">Стоимость воскрешения (75%)</span><span class="silver-value" id="trainerBaseCostRez">0</span></div>
+            </div>
+        </div>
+
+        <div class="trainer-panel">
+            <div class="flex-row">
+                <span class="stat-title" style="border:none; padding:0;"><span>🧑‍🏫</span> <span id="trainerFeeLabel">НАЦЕНКА ТРЕНЕРА</span></span>
+                <div class="percent-control">
+                    <input type="number" id="trainerPercent" class="percent-input" value="30" step="1" min="0">
+                    <span style="color:#a0a8c0;">%</span>
+                </div>
+            </div>
+            <div class="flex-row">
+                <span class="gray-text" id="feeAmountLabel">➕ Сумма наценки</span>
+                <span class="silver-value" id="trainerFee">0</span>
+            </div>
+            <hr>
+            <div class="flex-row total-glow">
+                <span style="font-weight: 600;" id="totalLabel">💰 ОБЩАЯ СТОИМОСТЬ</span>
+                <span class="final-cost" id="totalCombined">0</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ==================== ПЕРЕВОДЫ ====================
+    const translations = {
+        ru: {
+            title: "✦ ШТАБ ТРЕНЕРА ✦",
+            labelArmy: "ЮНИТОВ НА 1 УДАР",
+            labelBuyPrice: "ЦЕНА ПОКУПКИ 1 ЮНИТА",
+            labelRezPrice: "ЦЕНА ВОСКРЕШЕНИЯ 1 ЮНИТА",
+            titleLosses: "ТРЕНЕР · ПОТЕРИ",
+            lossPerRoundLabel: "Потери за 1 раунд",
+            lossesForBuildLabel: "За 10 раундов (для постройки)",
+            lossesForRezLabel: "За 11 раундов (для воскрешения)",
+            titleRestore: "ТРЕНЕР · ВОССТАНОВЛЕНИЕ",
+            needToBuildLabel: "Нужно построить",
+            buyCostLabel: "Стоимость покупки",
+            rezCostLabel: "Стоимость воскрешения (75%)",
+            trainerFeeLabel: "НАЦЕНКА ТРЕНЕРА",
+            feeAmountLabel: "➕ Сумма наценки",
+            totalLabel: "💰 ОБЩАЯ СТОИМОСТЬ"
+        },
+        en: {
+            title: "✦ TRAINER'S HQ ✦",
+            labelArmy: "UNITS PER 1 ATTACK",
+            labelBuyPrice: "PURCHASE PRICE PER 1 UNIT",
+            labelRezPrice: "RESURRECTION PRICE PER 1 UNIT",
+            titleLosses: "TRAINER · LOSSES",
+            lossPerRoundLabel: "Losses per round",
+            lossesForBuildLabel: "For 10 rounds (for construction)",
+            lossesForRezLabel: "For 11 rounds (for resurrection)",
+            titleRestore: "TRAINER · RESTORATION",
+            needToBuildLabel: "Need to build",
+            buyCostLabel: "Purchase cost",
+            rezCostLabel: "Resurrection cost (75%)",
+            trainerFeeLabel: "TRAINER'S MARKUP",
+            feeAmountLabel: "➕ Markup amount",
+            totalLabel: "💰 TOTAL COST"
+        },
+        es: {
+            title: "✦ CUARTEL DEL ENTRENADOR ✦",
+            labelArmy: "UNIDADES POR 1 ATAQUE",
+            labelBuyPrice: "PRECIO DE COMPRA POR 1 UNIDAD",
+            labelRezPrice: "PRECIO DE RESURRECCIÓN POR 1 UNIDAD",
+            titleLosses: "ENTRENADOR · PÉRDIDAS",
+            lossPerRoundLabel: "Pérdidas por ronda",
+            lossesForBuildLabel: "Por 10 rondas (para construcción)",
+            lossesForRezLabel: "Por 11 rondas (para resurrección)",
+            titleRestore: "ENTRENADOR · RESTAURACIÓN",
+            needToBuildLabel: "Necesario construir",
+            buyCostLabel: "Costo de compra",
+            rezCostLabel: "Costo de resurrección (75%)",
+            trainerFeeLabel: "RECARGO DEL ENTRENADOR",
+            feeAmountLabel: "➕ Monto del recargo",
+            totalLabel: "💰 COSTO TOTAL"
+        },
+        it: {
+            title: "✦ QUARTIER GENERALE DELL'ALLENATORE ✦",
+            labelArmy: "UNITÀ PER 1 ATTACCO",
+            labelBuyPrice: "PREZZO D'ACQUISTO PER 1 UNITÀ",
+            labelRezPrice: "PREZZO DI RESURREZIONE PER 1 UNITÀ",
+            titleLosses: "ALLENATORE · PERDITE",
+            lossPerRoundLabel: "Perdite per round",
+            lossesForBuildLabel: "Per 10 round (per la costruzione)",
+            lossesForRezLabel: "Per 11 round (per la resurrezione)",
+            titleRestore: "ALLENATORE · RESTAURO",
+            needToBuildLabel: "Necessario costruire",
+            buyCostLabel: "Costo d'acquisto",
+            rezCostLabel: "Costo di resurrezione (75%)",
+            trainerFeeLabel: "MARGINE DELL'ALLENATORE",
+            feeAmountLabel: "➕ Importo del margine",
+            totalLabel: "💰 COSTO TOTALE"
+        },
+        fr: {
+            title: "✦ QUARTIER GÉNÉRAL DE L'ENTRAÎNEUR ✦",
+            labelArmy: "UNITÉS PAR 1 ATTAQUE",
+            labelBuyPrice: "PRIX D'ACHAT POUR 1 UNITÉ",
+            labelRezPrice: "PRIX DE RÉSURRECTION POUR 1 UNITÉ",
+            titleLosses: "ENTRAÎNEUR · PERTES",
+            lossPerRoundLabel: "Pertes par round",
+            lossesForBuildLabel: "Pour 10 rounds (pour la construction)",
+            lossesForRezLabel: "Pour 11 rounds (pour la résurrection)",
+            titleRestore: "ENTRAÎNEUR · RESTAURATION",
+            needToBuildLabel: "À construire",
+            buyCostLabel: "Coût d'achat",
+            rezCostLabel: "Coût de résurrection (75%)",
+            trainerFeeLabel: "MARGE DE L'ENTRAÎNEUR",
+            feeAmountLabel: "➕ Montant de la marge",
+            totalLabel: "💰 COÛT TOTAL"
+        },
+        de: {
+            title: "✦ HAUPTQUARTIER DES TRAINERS ✦",
+            labelArmy: "EINHEITEN PRO 1 ANGRIFF",
+            labelBuyPrice: "KAUFPREIS PRO 1 EINHEIT",
+            labelRezPrice: "WIEDERBELEBUNGSPREIS PRO 1 EINHEIT",
+            titleLosses: "TRAINER · VERLUSTE",
+            lossPerRoundLabel: "Verluste pro Runde",
+            lossesForBuildLabel: "Für 10 Runden (für den Bau)",
+            lossesForRezLabel: "Für 11 Runden (für die Wiederbelebung)",
+            titleRestore: "TRAINER · WIEDERHERSTELLUNG",
+            needToBuildLabel: "Müssen bauen",
+            buyCostLabel: "Kaufkosten",
+            rezCostLabel: "Wiederbelebungskosten (75%)",
+            trainerFeeLabel: "AUFSCHLAG DES TRAINERS",
+            feeAmountLabel: "➕ Aufschlagsbetrag",
+            totalLabel: "💰 GESAMTKOSTEN"
+        },
+        bg: {
+            title: "✦ ЩАБ НА ТРЕНЬОРА ✦",
+            labelArmy: "ЮНИТИ ЗА 1 АТАКА",
+            labelBuyPrice: "ЦЕНА ЗА ПОКУПКА НА 1 ЮНИТ",
+            labelRezPrice: "ЦЕНА ЗА ВЪЗКРЕСЕНИЕ НА 1 ЮНИТ",
+            titleLosses: "ТРЕНЬОР · ЗАГУБИ",
+            lossPerRoundLabel: "Загуби на рунд",
+            lossesForBuildLabel: "За 10 рунда (за строеж)",
+            lossesForRezLabel: "За 11 рунда (за възкресение)",
+            titleRestore: "ТРЕНЬОР · ВЪЗСТАНОВЯВАНЕ",
+            needToBuildLabel: "Трябва да се построи",
+            buyCostLabel: "Цена на покупка",
+            rezCostLabel: "Цена на възкресение (75%)",
+            trainerFeeLabel: "НАДЦЕНКА НА ТРЕНЬОРА",
+            feeAmountLabel: "➕ Сума на надценката",
+            totalLabel: "💰 ОБЩА СТОЙНОСТ"
+        }
+    };
+
+    let currentLang = 'ru';
+
+    const elements = {
+        title: document.getElementById('title'),
+        labelArmy: document.getElementById('labelArmy'),
+        labelBuyPrice: document.getElementById('labelBuyPrice'),
+        labelRezPrice: document.getElementById('labelRezPrice'),
+        titleLosses: document.getElementById('titleLosses'),
+        lossPerRoundLabel: document.getElementById('lossPerRoundLabel'),
+        lossesForBuildLabel: document.getElementById('lossesForBuildLabel'),
+        lossesForRezLabel: document.getElementById('lossesForRezLabel'),
+        titleRestore: document.getElementById('titleRestore'),
+        needToBuildLabel: document.getElementById('needToBuildLabel'),
+        buyCostLabel: document.getElementById('buyCostLabel'),
+        rezCostLabel: document.getElementById('rezCostLabel'),
+        trainerFeeLabel: document.getElementById('trainerFeeLabel'),
+        feeAmountLabel: document.getElementById('feeAmountLabel'),
+        totalLabel: document.getElementById('totalLabel')
+    };
+
+    function setLanguage(lang) {
+        currentLang = lang;
+        const t = translations[lang];
+        if (!t) return;
+        
+        for (const key in elements) {
+            if (elements[key] && t[key]) {
+                elements[key].innerText = t[key];
+            }
+        }
+        
+        document.querySelectorAll('.flag').forEach(flag => {
+            if (flag.dataset.lang === lang) {
+                flag.classList.add('active');
+            } else {
+                flag.classList.remove('active');
+            }
+        });
+    }
+
+    function fmt(n) { return Math.floor(n).toLocaleString('ru-RU'); }
+
+    const armyInput = document.getElementById('armyInput');
+    const buyPriceInput = document.getElementById('buyPrice');
+    const rezPriceInput = document.getElementById('rezPrice');
+    const trainerPercentInput = document.getElementById('trainerPercent');
+
+    const lossPerRoundSpan = document.getElementById('lossPerRound');
+    const totalLossesForBuildSpan = document.getElementById('totalLossesForBuild');
+    const totalLosses11Span = document.getElementById('totalLosses11');
+    const trainerNeedSpan = document.getElementById('trainerNeed');
+    const trainerBaseCostBuySpan = document.getElementById('trainerBaseCostBuy');
+    const trainerBaseCostRezSpan = document.getElementById('trainerBaseCostRez');
+    const trainerFeeSpan = document.getElementById('trainerFee');
+    const totalCombinedSpan = document.getElementById('totalCombined');
+
+    const REZ_PERCENT = 0.75;
+    const ROUNDS_FOR_BUILD = 10;
+    const ROUNDS_FOR_REZ = 11;
+
+    function update() {
+        let army = parseFloat(armyInput.value) || 0;
+        let buyPrice = parseFloat(buyPriceInput.value) || 0;
+        let rezPrice = parseFloat(rezPriceInput.value) || 0;
+        let trainerPct = parseFloat(trainerPercentInput.value) || 0;
+
+        let lossPerRound = army / 4;
+        let totalLossesForBuild = lossPerRound * ROUNDS_FOR_BUILD;
+        let trainerNeedRaw = totalLossesForBuild + army;
+        let trainerNeed = Math.ceil(trainerNeedRaw);
+        let totalLosses11 = lossPerRound * ROUNDS_FOR_REZ;
+
+        let trainerBaseCostBuy = trainerNeed * buyPrice;
+        let rezAmount = army * REZ_PERCENT * ROUNDS_FOR_REZ;
+        let trainerBaseCostRez = rezAmount * rezPrice;
+
+        let totalBeforeFee = trainerBaseCostBuy + trainerBaseCostRez;
+        let trainerFee = totalBeforeFee * (trainerPct / 100);
+        let totalCombined = totalBeforeFee + trainerFee;
+
+        lossPerRoundSpan.innerText = fmt(lossPerRound);
+        totalLossesForBuildSpan.innerText = fmt(totalLossesForBuild);
+        totalLosses11Span.innerText = fmt(totalLosses11);
+        trainerNeedSpan.innerText = fmt(trainerNeed);
+        trainerBaseCostBuySpan.innerText = fmt(trainerBaseCostBuy) + ' 🪙';
+        trainerBaseCostRezSpan.innerText = fmt(trainerBaseCostRez) + ' 🪙';
+        trainerFeeSpan.innerText = fmt(trainerFee) + ' 🪙';
+        totalCombinedSpan.innerText = fmt(totalCombined) + ' 🪙';
+    }
+
+    armyInput.addEventListener('input', update);
+    buyPriceInput.addEventListener('input', update);
+    rezPriceInput.addEventListener('input', update);
+    trainerPercentInput.addEventListener('input', update);
+    
+    document.querySelectorAll('.flag').forEach(flag => {
+        flag.addEventListener('click', () => {
+            setLanguage(flag.dataset.lang);
+        });
+    });
+    
+    setLanguage('ru');
+    update();
+</script>
+</body>
+</html>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>Штаб Тренера · Счётчик</title>
+    <title>Штаб Тренера · Счётчики</title>
     <style>
         * {
             margin: 0;
@@ -264,13 +264,16 @@
             color: #9ea3c2;
         }
 
-        /* Подвал со счётчиком */
         .footer {
             padding: 16px 28px 20px;
             border-top: 1px solid rgba(255,255,255,0.06);
             text-align: center;
             font-size: 0.75rem;
             color: #7a80a0;
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            flex-wrap: wrap;
         }
 
         .counter {
@@ -292,7 +295,7 @@
             .flags { gap: 12px; }
             .flag { font-size: 1.6rem; }
             .price-row { grid-template-columns: 1fr; gap: 16px; }
-            .footer { padding: 12px 18px 16px; }
+            .footer { padding: 12px 18px 16px; gap: 12px; }
         }
     </style>
 </head>
@@ -362,36 +365,66 @@
         </div>
     </div>
 
-    <!-- Подвал со счётчиком -->
     <div class="footer">
         <div class="counter">
-            <span>👁️</span>
-            <span id="visitCounter">—</span>
-            <span>уникальных посетителей</span>
+            <span>👥</span>
+            <span id="totalVisits">—</span>
+            <span>всего посещений</span>
+        </div>
+        <div class="counter">
+            <span>🟢</span>
+            <span id="onlineNow">—</span>
+            <span>сейчас онлайн</span>
         </div>
     </div>
 </div>
 
 <script>
-    // ==================== ПОЛУЧЕНИЕ СЧЁТЧИКА ====================
-    async function updateCounter() {
-        const namespace = "trainer_hq";
-        const key = "visitors";
+    // ========== СЧЁТЧИКИ ==========
+    // 1. Общий счётчик через CountAPI (увеличивается при каждом уникальном визите)
+    async function updateTotalCounter() {
+        const namespace = "trainer_hq_total";
+        const key = "visits";
         const url = `https://api.countapi.xyz/hit/${namespace}/${key}`;
-        
         try {
             const response = await fetch(url);
             const data = await response.json();
             if (data && data.value !== undefined) {
-                document.getElementById('visitCounter').innerText = data.value.toLocaleString('ru-RU');
+                document.getElementById('totalVisits').innerText = data.value.toLocaleString('ru-RU');
             }
         } catch (e) {
-            console.warn("Счётчик не загрузился", e);
-            document.getElementById('visitCounter').innerText = "❤️";
+            document.getElementById('totalVisits').innerText = "—";
         }
     }
-    
-    // ==================== ПЕРЕВОДЫ ====================
+
+    // 2. Онлайн (эмулируем через localStorage + таймер, показываем "уникальных за 5 минут")
+    function updateOnline() {
+        const STORAGE_KEY = "trainer_online_heartbeat";
+        const TIMEOUT_MS = 5 * 60 * 1000;
+        const now = Date.now();
+        let heartbeats = [];
+
+        try {
+            const stored = localStorage.getItem(STORAGE_KEY);
+            if (stored) {
+                heartbeats = JSON.parse(stored);
+                heartbeats = heartbeats.filter(t => now - t < TIMEOUT_MS);
+            }
+            const lastBeat = heartbeats[heartbeats.length - 1];
+            if (!lastBeat || (now - lastBeat) > 60000) {
+                heartbeats.push(now);
+            }
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(heartbeats));
+            document.getElementById('onlineNow').innerText = heartbeats.length;
+        } catch(e) {
+            document.getElementById('onlineNow').innerText = "~1";
+        }
+    }
+
+    updateOnline();
+    setInterval(updateOnline, 60000);
+
+    // ========== ОСНОВНАЯ ЛОГИКА ==========
     const translations = {
         ru: {
             title: "✦ ШТАБ ТРЕНЕРА ✦",
@@ -481,143 +514,279 @@
         de: {
             title: "✦ HAUPTQUARTIER DES TRAINERS ✦",
             labelArmy: "EINHEITEN PRO 1 ANGRIFF",
-            labelBuyPrice: "KAUFPREIS PRO 1 EINHEIT",
-            labelRezPrice: "WIEDERBELEBUNGSPREIS PRO 1 EINHEIT",
-            titleLosses: "TRAINER · VERLUSTE",
-            lossPerRoundLabel: "Verluste pro Runde",
-            lossesForBuildLabel: "Für 10 Runden (für den Bau)",
-            lossesForRezLabel: "Für 11 Runden (für die Wiederbelebung)",
-            titleRestore: "TRAINER · WIEDERHERSTELLUNG",
-            needToBuildLabel: "Müssen bauen",
-            buyCostLabel: "Kaufkosten",
-            rezCostLabel: "Wiederbelebungskosten (75%)",
-            trainerFeeLabel: "AUFSCHLAG DES TRAINERS",
-            feeAmountLabel: "➕ Aufschlagsbetrag",
-            totalLabel: "💰 GESAMTKOSTEN"
+            labelBuyPrice: "KAUFPREIS PRO 1 EINHEINHEIT",
+IT",
+            label            labelRezRezPrice: "WIEDERBELEBPrice: "WIEDERBELEBUNGSPUNGSPREISREIS PRO  PRO 1 E1 EINHEINHEIT",
+IT",
+            title            titleLossesLosses: "TRA: "INERTRAINER · VER · VERLUSTE",
+LUST            lossE",
+            lossPerRoundPerRoundLabel:Label: "Verl "Verlusteuste pro R pro Rundeunde",
+",
+            losses            lossesForBuildForBuildLabel:Label: "Für "Für 10 10 Runden Runden (für (für den Bau den Bau)",
+           )",
+            lossesFor lossesForRezRezLabel:Label: "Für "Für 11 Runden 11 (für Runden (für die Wieder die Wiederbelebbelebung)",
+ung)",
+            title            titleRestoreRestore: ": "TRATRAINERINER · WI · WIEDERHEREDERHERSTELLSTELLUNG",
+UNG",
+            need            needToBuildLabel:ToBuildLabel: "M "Müssen büssen bauen",
+auen",
+            buy            buyCostLabelCostLabel: ": "KaufKaufkostenkosten",
+           ",
+            rezCost rezCostLabel:Label: "W "Wiederbeiederbelebunglebungskosten (75skosten (75%)",
+%)",
+            trainer            trainerFeeLabelFeeLabel: ": "AUFSAUFSCHLCHLAG DESAG DES TRAIN TRAINERS",
+ERS",
+            feeAmountLabel            fee: "AmountLabel: "➕ Auf➕ Aufschlagsschlagsbetragbetrag",
+           ",
+            totalLabel totalLabel: ": "💰 G💰 GESAMESAMTKOSTEN"
+TKOSTEN"
         },
-        bg: {
-            title: "✦ ЩАБ НА ТРЕНЬОРА ✦",
-            labelArmy: "ЮНИТИ ЗА 1 АТАКА",
-            labelBuyPrice: "ЦЕНА ЗА ПОКУПКА НА 1 ЮНИТ",
-            labelRezPrice: "ЦЕНА ЗА ВЪЗКРЕСЕНИЕ НА 1 ЮНИТ",
-            titleLosses: "ТРЕНЬОР · ЗАГУБИ",
-            lossPerRoundLabel: "Загуби на рунд",
-            lossesForBuildLabel: "За 10 рунда (за строеж)",
-            lossesForRezLabel: "За 11 рунда (за възкресение)",
-            titleRestore: "ТРЕНЬОР · ВЪЗСТАНОВЯВАНЕ",
-            needToBuildLabel: "Трябва да се построи",
-            buyCostLabel: "Цена на покупка",
-            rezCostLabel: "Цена на възкресение (75%)",
-            trainerFeeLabel: "НАДЦЕНКА НА ТРЕНЬОРА",
-            feeAmountLabel: "➕ Сума на надценката",
-            totalLabel: "💰 ОБЩА СТОЙНОСТ"
+        },
+        bg        bg: {
+: {
+            title            title: ": "✦✦ ЩА ЩАБ НБ НА ТА ТРЕНРЕНЬОЬОРАРА ✦",
+ ✦",
+            label            labelArmyArmy: ": "ЮНИЮНИТТИИ З ЗАА 1 1 АТАКА АТАКА",
+           ",
+            labelBuy labelBuyPrice:Price: "Ц "ЦЕНАЕНА ЗА ЗА ПОКУП ПОККА НУПА КА НА 1 Ю1 ЮНИТНИТ",
+            labelRe",
+            labelRezPricezPrice: ": "ЦЕНЦЕНА ЗА ЗА ВА ВЪЗЪЗКРЕКРЕСЕНИСЕНИЕ НЕ НА А 1 Ю1 ЮНИТНИТ",
+           ",
+            titleLoss titleLosses:es: "ТРЕН "ТРЕНЬОРЬОР · З · ЗАГАГУБУБИ",
+И",
+            loss            lossPerRoundPerRoundLabel:Label: "За "Загубигуби на ру на рунд",
+нд",
+            losses            lossesForBuildForBuildLabel:Label: "За "За  1010 рунда рунда (за (за строе строеж)",
+ж)",
+            losses            lossesForReForRezLabelzLabel: ": "За За 11 ру11 рунда (нда (за въза възкзкресениересение)",
+           )",
+            titleRest titleRestore: "ore:ТР "ТЕНЬРЕНОРЬОР · В · ВЪЗЪЗСТАСТАНОВНОВЯВЯВАНЕАНЕ",
+           ",
+            needTo needToBuildLabelBuildLabel: ": "ТряТрябвабва да се построи да се построи",
+           ",
+            buyCost buyCostLabel:Label: "Ц "Цена наена на покуп покупка",
+ка",
+            rez            rezCostLabelCostLabel: ": "ЦенаЦена на въ на възкзкресениересение (75 (75%)",
+%)",
+            trainer            trainerFeeLabelFeeLabel: ": "НАДНАДЦЕНЦЕНКА НКА НА ТА ТРЕНРЕНЬОЬОРА",
+РА",
+            fee            feeAmountLabelAmountLabel: ": "➕ Су➕ Сума на надценма на надценкатаката",
+           ",
+            totalLabel totalLabel: ": "💰 О💰 ОБЩБЩА СА СТОТОЙНОЙНОСТ"
+СТ"
+        }
         }
     };
 
-    let currentLang = 'ru';
-
-    const elements = {
-        title: document.getElementById('title'),
-        labelArmy: document.getElementById('labelArmy'),
-        labelBuyPrice: document.getElementById('labelBuyPrice'),
-        labelRezPrice: document.getElementById('labelRezPrice'),
-        titleLosses: document.getElementById('titleLosses'),
-        lossPerRoundLabel: document.getElementById('lossPerRoundLabel'),
-        lossesForBuildLabel: document.getElementById('lossesForBuildLabel'),
-        lossesForRezLabel: document.getElementById('lossesForRezLabel'),
-        titleRestore: document.getElementById('titleRestore'),
-        needToBuildLabel: document.getElementById('needToBuildLabel'),
-        buyCostLabel: document.getElementById('buyCostLabel'),
-        rezCostLabel: document.getElementById('rezCostLabel'),
-        trainerFeeLabel: document.getElementById('trainerFeeLabel'),
-        feeAmountLabel: document.getElementById('feeAmountLabel'),
-        totalLabel: document.getElementById('totalLabel')
     };
 
-    function setLanguage(lang) {
-        currentLang = lang;
-        const t = translations[lang];
-        if (!t) return;
-        
-        for (const key in elements) {
-            if (elements[key] && t[key]) {
-                elements[key].innerText = t[key];
+    let    let currentLang currentLang = 'ru';
+
+ = 'ru';
+
+    const    const elements = elements = {
+        {
+        title: title: document.getElementById document.getElementById('title('title'),
+        labelArm'),
+       y: labelArmy: document.getElementById document.getElementById('label('labelArmyArmy'),
+       '),
+        labelBuy labelBuyPrice:Price: document.getElementById document.getElementById('labelBuyPrice('labelBuyPrice'),
+       '),
+        labelRe labelRezPricezPrice: document: document.getElementById('.getElementById('labelRelabelRezPricezPrice'),
+       '),
+        titleLoss titleLosses:es: document.getElementById document.getElementById('title('titleLossesLosses'),
+'),
+               lossPerRoundLabel lossPerRoundLabel: document: document.getElementById('.getElementById('lossPerlossPerRoundLabelRoundLabel'),
+       '),
+        lossesFor lossesForBuildLabelBuildLabel: document.getElementById(': document.getElementById('losseslossesForBuildForBuildLabel'),
+Label'),
+        losses        lossesForReForRezLabelzLabel: document: document.getElementById('.getElementById('lossesForRelossesForRezLabelzLabel'),
+       '),
+        titleRest titleRestore:ore: document.getElementById document.getElementById('title('titleRestore'),
+       Restore needTo'),
+        needToBuildLabelBuildLabel: document: document.getElementById('.getElementById('needToneedToBuildLabelBuildLabel'),
+       '),
+        buyCost buyCostLabel: document.getElementById('buyLabel: document.getElementById('buyCostLabelCostLabel'),
+       '),
+        rezCost rezCostLabel: document.getElementByIdLabel:('rez document.getElementById('rezCostLabel'),
+       CostLabel'),
+        trainer trainerFeeFeeLabelLabel:: document.getElementById document.getElementById('train('trainerFeeerFeeLabel'),
+Label'),
+        fee        feeAmountLabelAmountLabel: document: document.getElementById('.getElementById('feeAmountfeeAmountLabel'),
+Label'),
+        total        totalLabel:Label: document.getElementById document.getElementById('total('totalLabel')
+Label')
+    };
+
+    function    };
+
+    function setLanguage setLanguage(lang(lang)) {
+ {
+        current        currentLangLang = = lang;
+ lang;
+        const        const t = t = translations translations[lang];
+        if[lang];
+ (!t        if (!t) return) return;
+       ;
+        for (const key for (const key in elements in elements) {
+) {
+            if            if (elements[key] (elements[key] && t && t[key])[key]) {
+                {
+                elements[key elements[key].inner].innerText =Text = t[key t[key];
+           ];
             }
         }
-        
-        document.querySelectorAll('.flag').forEach(flag => {
-            if (flag.dataset.lang === lang) {
-                flag.classList.add('active');
-            } else {
-                flag.classList.remove('active');
+        }
+        }
+        document.querySelector document.querySelectorAll('.All('.flag').forEach(flag => {
+           flag').forEach(flag => {
+            if ( if (flag.datflag.dataset.langaset.lang === lang === lang) {
+) {
+                flag                flag.classList.add.classList.add('active('active');
+           ');
+            } else } else {
+                {
+                flag.classList flag.classList.remove('.remove('active');
+active');
             }
+            }
+        });
         });
     }
 
-    function fmt(n) { return Math.floor(n).toLocaleString('ru-RU'); }
-
-    const armyInput = document.getElementById('armyInput');
-    const buyPriceInput = document.getElementById('buyPrice');
-    const rezPriceInput = document.getElementById('rezPrice');
-    const trainerPercentInput = document.getElementById('trainerPercent');
-
-    const lossPerRoundSpan = document.getElementById('lossPerRound');
-    const totalLossesForBuildSpan = document.getElementById('totalLossesForBuild');
-    const totalLosses11Span = document.getElementById('totalLosses11');
-    const trainerNeedSpan = document.getElementById('trainerNeed');
-    const trainerBaseCostBuySpan = document.getElementById('trainerBaseCostBuy');
-    const trainerBaseCostRezSpan = document.getElementById('trainerBaseCostRez');
-    const trainerFeeSpan = document.getElementById('trainerFee');
-    const totalCombinedSpan = document.getElementById('totalCombined');
-
-    const REZ_PERCENT = 0.75;
-    const ROUNDS_FOR_BUILD = 10;
-    const ROUNDS_FOR_REZ = 11;
-
-    function update() {
-        let army = parseFloat(armyInput.value) || 0;
-        let buyPrice = parseFloat(buyPriceInput.value) || 0;
-        let rezPrice = parseFloat(rezPriceInput.value) || 0;
-        let trainerPct = parseFloat(trainerPercentInput.value) || 0;
-
-        let lossPerRound = army / 4;
-        let totalLossesForBuild = lossPerRound * ROUNDS_FOR_BUILD;
-        let trainerNeedRaw = totalLossesForBuild + army;
-        let trainerNeed = Math.ceil(trainerNeedRaw);
-        let totalLosses11 = lossPerRound * ROUNDS_FOR_REZ;
-
-        let trainerBaseCostBuy = trainerNeed * buyPrice;
-        let rezAmount = army * REZ_PERCENT * ROUNDS_FOR_REZ;
-        let trainerBaseCostRez = rezAmount * rezPrice;
-
-        let totalBeforeFee = trainerBaseCostBuy + trainerBaseCostRez;
-        let trainerFee = totalBeforeFee * (trainerPct / 100);
-        let totalCombined = totalBeforeFee + trainerFee;
-
-        lossPerRoundSpan.innerText = fmt(lossPerRound);
-        totalLossesForBuildSpan.innerText = fmt(totalLossesForBuild);
-        totalLosses11Span.innerText = fmt(totalLosses11);
-        trainerNeedSpan.innerText = fmt(trainerNeed);
-        trainerBaseCostBuySpan.innerText = fmt(trainerBaseCostBuy) + ' 🪙';
-        trainerBaseCostRezSpan.innerText = fmt(trainerBaseCostRez) + ' 🪙';
-        trainerFeeSpan.innerText = fmt(trainerFee) + ' 🪙';
-        totalCombinedSpan.innerText = fmt(totalCombined) + ' 🪙';
     }
 
-    armyInput.addEventListener('input', update);
-    buyPriceInput.addEventListener('input', update);
-    rezPriceInput.addEventListener('input', update);
-    trainerPercentInput.addEventListener('input', update);
+    function    function fmt(n fmt(n) {) { return Math.floor(n).to return Math.floor(n).toLocaleStringLocaleString('ru('ru-RU-RU'); }
+
+'); }
+
+    const armyInput = document    const armyInput = document.getElementById('.getElementById('armyarmyInput');
+Input');
+    const    const buyPrice buyPriceInput =Input = document.getElementById document.getElementById('buy('buyPrice');
+Price');
+    const    const rezPrice rezPriceInput =Input = document.getElementById document.getElementById('rezPrice');
+('rezPrice');
+    const    const trainerPercent trainerPercentInput =Input = document.getElementById document.getElementById('train('trainererPercent');
+
+   Percent');
+
+    const loss const lossPerRoundPerRoundSpan =Span = document.getElementById document('loss.getElementById('lossPerRoundPerRound');
+   ');
+    const total const totalLossesLossesForBuildForBuildSpan =Span = document.getElementById document.getElementById('total('totalLossesLossesForBuildForBuild');
+   ');
+    const total const totalLossesLosses11Span11Span = document = document.getElementById('.getElementById('totalLosstotalLosses11es11');
+   ');
+    const trainer const trainerNeedSpanNeedSpan = document = document.getElementById('.getElementById('trainertrainerNeed');
+Need');
+       const const trainerBase trainerBaseCostBuyCostBuySpan =Span = document.getElementById document.getElementById('train('trainerBaseerBaseCostBuyCostBuy');
+   ');
+    const trainer const trainerBaseCostBaseCostRezSpan =RezSpan = document.getElementById('trainerBase document.getElementById('trainerBaseCostReCostRez');
+z');
+    const    const trainerFee trainerFeeSpan =Span = document.getElementById('trainerFee');
+    const total document.getElementById('trainerFee');
+    const totalCombinedCombinedSpan =Span = document.getElementById document.getElementById('total('totalCombinedCombined');
+
+   ');
+
+    const RE const REZ_PERCENTZ_P = ERCENT0. = 0.75;
+75;
+    const    const ROUND ROUNDS_FS_FOR_BUOR_BUILD =ILD = 10 10;
+   ;
+    const ROUNDS const ROUNDS_FOR_FOR_REZ_REZ =  = 11;
+
+11;
+
+    function    function update() update() {
+        let army {
+        let = parse army = parseFloat(Float(armyarmyInput.valueInput.value) ||) || 0 0;
+       ;
+        let buy let buyPrice =Price = parseFloat(buy parseFloat(buyPriceInputPriceInput.value) || .value) || 00;
+;
+        let        let rezPrice = parse rezPriceFloat( = parseFloat(rezPricerezPriceInput.valueInput.value) ||) || 0 0;
+       ;
+        let trainer let trainerPctPct = parse = parseFloat(trainFloat(trainerPercenterPercentInput.value) ||Input.value ) || 00;
+
+       ;
+
+        let loss let lossPerRoundPerRound = army = army /  / 4;
+4;
+        let        let totalLossesFor totalLossesForBuild =Build = lossPer lossPerRound *Round * ROUND ROUNDS_FS_FOR_BUOR_BUILD;
+ILD;
+        let trainerNeed        letRaw = trainerNeedRaw = totalLossesForBuild + army;
+ totalLossesForBuild + army;
+        let        let trainerNeed trainerNeed = Math = Math.ceil.ceil(trainerNeedRaw(trainerNeedRaw);
+       );
+        let total let totalLossesLosses11 =11 = lossPer lossPerRound *Round * ROUND ROUNDS_FS_FOR_REOR_REZ;
+
+Z;
+
+        let        let trainerBase trainerBaseCostBuyCostBuy = trainer = trainerNeed *Need * buyPrice buyPrice;
+       ;
+        let rez let rezAmount = armyAmount = * REZ army * REZ_PERC_PERCENT *ENT * ROUND ROUNDS_FS_FOROR_RE_REZZ;
+;
+        let        let trainerBase trainerBaseCostReCostRez =z = rezAmount rezAmount * rez * rezPrice;
+
+Price;
+
+        let totalBefore        let totalBeforeFee =Fee = trainerBase trainerBaseCostBuyCostBuy + trainer + trainerBaseCostBaseCostRezRez;
+       ;
+        let trainer let trainerFee =Fee = totalBefore totalBeforeFee *Fee * (train (trainerPct /erP 100ct / 100);
+       );
+        let total let totalCombCombined = totalBeforeFeeined = totalBeforeFee + trainer + trainerFee;
+
+Fee;
+
+        loss        lossPerRoundPerRoundSpan.innerSpan.innerText =Text = fmt(lossPer fmt(lossPerRound);
+Round);
+        total        totalLossesLossesForBuildForBuildSpan.innerSpan.innerText =Text = fmt(total fmt(totalLossesLossesForBuildForBuild);
+       );
+        totalLoss totalLosses11es11Span.innerSpan.innerText =Text = fmt(total fmt(totalLossesLosses11);
+11);
+        trainer        trainerNeedSpanNeedSpan.innerText.innerText = fmt = fmt(trainer(trainerNeed);
+Need);
+        trainer        trainerBaseCostBaseCostBuySpanBuySpan.innerText.innerText = fmt(trainer = fmt(trainerBaseCostBaseCostBuy) + 'Buy) + ' 🪙';
+ 🪙';
+        trainer        trainerBaseCostBaseCostRezRezSpan.innerSpan.innerText =Text = fmt(train fmt(trainerBaseerBaseCostReCostRez)z) + ' + ' 🪙';
+ 🪙';
+        trainer        trainerFeeSpanFeeSpan.innerText.innerText = fmt = fmt(trainer(trainerFee)Fee) + ' + ' 🪙';
+ 🪙';
+        total        totalCombinedCombinedSpan.innerSpan.innerText =Text = fmt(total fmt(totalCombinedCombined) +) + ' ' 🪙 🪙';
+   ';
+    }
+
+    }
+
+    armyInput armyInput.addEventListener('input',.addEventListener(' update);
+input', update);
+    buyPriceInput    buyPriceInput.addEventListener('.addEventListener('input',input', update);
+ update);
+    rez    rezPriceInputPriceInput.addEventListener('.addEventListener('input',input', update);
+ update);
+    trainer    trainerPercentInputPercentInput.addEventListener('.addEventListener('input',input', update);
+ update);
     
-    document.querySelectorAll('.flag').forEach(flag => {
-        flag.addEventListener('click', () => {
-            setLanguage(flag.dataset.lang);
+       
+    document.querySelector document.querySelectorAll('.All('.flag').flag').forEach(forEach(flag =>flag => {
+        {
+        flag.addEventListener flag.addEventListener('click('click', () => {
+', () => {
+            set            setLanguage(Language(flag.datflag.dataset.langaset.lang);
+       );
         });
     });
+    });
     
-    setLanguage('ru');
-    update();
-    updateCounter();
+ });
+    
+    set    setLanguage('Language('ru');
+ru');
+    update    update();
+    updateTotalCounter();
+</script>
+</();
+    updateTotalCounter();
 </script>
 </body>
-</html>
+body>
+</html</html>
+```>

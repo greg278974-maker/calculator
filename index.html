@@ -381,48 +381,52 @@
 
 <script>
     // ========== СЧЁТЧИКИ (рабочие) ==========
-    async function updateTotalCounter() {
-        const key = "trainer_hq_visits";
-        const url = `https://views.romanovich.dev/api/count/${key}`;
-        try {
-            const response = await fetch(url);
-            const data = await response.json();
-            if (data && data.count !== undefined) {
-                document.getElementById('totalVisits').innerText = data.count.toLocaleString('ru-RU');
-            } else {
-                document.getElementById('totalVisits').innerText = "128";
-            }
-        } catch (e) {
-            console.warn("Счётчик временно недоступен");
-            document.getElementById('totalVisits').innerText = "42";
+    // ========== СЧЁТЧИКИ ==========
+async function updateTotalCounter() {
+    const namespace = "trainer_hq";
+    const key = "visits_2025";
+    const url = `https://api.countapi.xyz/hit/${namespace}/${key}`;
+    
+    try {
+        const response = await fetch(url);
+        const data = await response.json();
+        if (data && data.value !== undefined) {
+            document.getElementById('totalVisits').innerText = data.value.toLocaleString('ru-RU');
+        } else {
+            document.getElementById('totalVisits').innerText = "128";
         }
+    } catch (e) {
+        console.warn("Счётчик временно недоступен");
+        document.getElementById('totalVisits').innerText = "99+";
     }
+}
 
-    function updateOnline() {
-        const STORAGE_KEY = "trainer_online_heartbeat";
-        const TIMEOUT_MS = 5 * 60 * 1000;
-        const now = Date.now();
-        let heartbeats = [];
-        try {
-            const stored = localStorage.getItem(STORAGE_KEY);
-            if (stored) {
-                heartbeats = JSON.parse(stored);
-                heartbeats = heartbeats.filter(t => now - t < TIMEOUT_MS);
-            }
-            const lastBeat = heartbeats[heartbeats.length - 1];
-            if (!lastBeat || (now - lastBeat) > 60000) {
-                heartbeats.push(now);
-            }
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(heartbeats));
-            document.getElementById('onlineNow').innerText = heartbeats.length;
-        } catch(e) {
-            document.getElementById('onlineNow').innerText = "~1";
+function updateOnline() {
+    const STORAGE_KEY = "trainer_online_heartbeat";
+    const TIMEOUT_MS = 5 * 60 * 1000;
+    const now = Date.now();
+    let heartbeats = [];
+    try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+            heartbeats = JSON.parse(stored);
+            heartbeats = heartbeats.filter(t => now - t < TIMEOUT_MS);
         }
+        const lastBeat = heartbeats[heartbeats.length - 1];
+        if (!lastBeat || (now - lastBeat) > 60000) {
+            heartbeats.push(now);
+        }
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(heartbeats));
+        document.getElementById('onlineNow').innerText = heartbeats.length;
+    } catch(e) {
+        document.getElementById('onlineNow').innerText = "~1";
     }
+}
 
-    updateOnline();
-    setInterval(updateOnline, 60000);
-
+// Запускаем счётчики
+updateOnline();
+setInterval(updateOnline, 60000);
+updateTotalCounter();
     // ========== ОСНОВНАЯ ЛОГИКА КАЛЬКУЛЯТОРА ==========
     const translations = {
         ru: {

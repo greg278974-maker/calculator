@@ -1,657 +1,271 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>Штаб Тренера · Рабочая версия</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-       body {
-    min-height: 100vh;
-    background-image: url('bg.png');
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-family: 'Inter', 'SF Pro Display', sans-serif;
-    padding: 24px;
-    color: #e8ecff;
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+<title>Штаб Тренера · Рабочая версия</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --gold:#f0c04a;--gold-hi:#ffe6a0;--gold-2:#c9973a;--gold-deep:#8a6220;
+  --ember:#ff6b2e;--ember-2:#c0392b;--gem:#e0322f;--gem-glow:rgba(224,50,47,.55);
+  --parch:#ecdfc4;--muted:#a99a7d;--line:rgba(240,190,90,.2);--mono:'JetBrains Mono',monospace;
 }
-
-        .calc {
-            max-width: 1000px;
-            width: 100%;
-            background: rgba(20, 24, 40, 0.65);
-            backdrop-filter: blur(18px);
-            border-radius: 28px;
-            border: 1px solid rgba(255,255,255,0.08);
-            box-shadow: 0 30px 60px rgba(0,0,0,0.6), inset 0 0 40px rgba(255,255,255,0.03);
-        }
-
-        .calc-header {
-            padding: 24px 28px 20px;
-            text-align: center;
-            background: linear-gradient(180deg, rgba(255,255,255,0.05), transparent);
-            border-bottom: 1px solid rgba(255,255,255,0.06);
-        }
-
-        .calc-header h1 {
-            font-size: 1.8rem;
-            font-weight: 700;
-            letter-spacing: 1px;
-            background: linear-gradient(90deg, #c0c8e0, #e8ecff, #c0c8e0);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 20px;
-        }
-
-        .flags {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 20px;
-            margin-top: 12px;
-            margin-bottom: 8px;
-        }
-
-        .flag {
-            font-size: 2.2rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            filter: grayscale(0.4);
-            opacity: 0.7;
-        }
-
-        .flag:hover {
-            transform: scale(1.15);
-            filter: grayscale(0);
-            opacity: 1;
-        }
-
-        .flag.active {
-            filter: grayscale(0);
-            opacity: 1;
-            transform: scale(1.08);
-            text-shadow: 0 0 8px rgba(255,255,255,0.5);
-        }
-
-        .calc-body {
-            padding: 28px 28px 20px;
-        }
-
-        .price-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 24px;
-        }
-
-        .field {
-            margin-bottom: 24px;
-        }
-
-        .field-label {
-            font-size: 0.85rem;
-            letter-spacing: 1.5px;
-            color: rgba(255,255,255,0.6);
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        input {
-            width: 100%;
-            background: rgba(10,12,20,0.8);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 20px;
-            padding: 16px 20px;
-            font-size: 1.2rem;
-            color: #fff;
-            text-align: center;
-            transition: all 0.25s ease;
-            outline: none;
-            font-family: monospace;
-        }
-
-        input:focus {
-            border-color: #a0a8c0;
-            box-shadow: 0 0 0 2px rgba(160,168,192,0.2), 0 0 12px rgba(160,168,192,0.4);
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 24px;
-            margin: 28px 0 24px;
-        }
-
-        .stat-card {
-            background: rgba(15,18,30,0.7);
-            border-radius: 24px;
-            padding: 20px 18px;
-            border: 1px solid rgba(255,255,255,0.06);
-            transition: all 0.3s ease;
-            text-align: center;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-        }
-
-        .stat-title {
-            font-size: 0.8rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            color: #aeb4d0;
-            margin-bottom: 18px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        .stat-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: baseline;
-            margin-bottom: 14px;
-            font-size: 0.95rem;
-            color: #cbcfeb;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-
-        .stat-value {
-            font-weight: 600;
-            font-size: 1rem;
-            color: #fff;
-            font-family: monospace;
-        }
-
-        .silver-value,
-        .big-silver {
-            background: linear-gradient(90deg, #b8c0dc, #e0e4f5);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-weight: 700;
-        }
-
-        .big-silver {
-            font-size: 1.5rem;
-        }
-
-        .trainer-panel {
-            background: rgba(10,12,22,0.7);
-            border-radius: 24px;
-            border: 1px solid rgba(255,255,255,0.06);
-            padding: 22px 24px;
-            margin-top: 20px;
-            text-align: center;
-        }
-
-        .flex-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            margin-bottom: 16px;
-            gap: 14px;
-        }
-
-        .percent-control {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            background: rgba(0,0,0,0.5);
-            padding: 5px 22px;
-            border-radius: 40px;
-            border: 1px solid rgba(160,168,192,0.4);
-        }
-
-        .percent-input {
-            width: 85px;
-            background: transparent;
-            border: none;
-            padding: 8px 0;
-            font-size: 1rem;
-            font-weight: 600;
-            color: #c8d0e8;
-            text-align: center;
-            outline: none;
-        }
-
-        hr {
-            border: none;
-            border-top: 1px solid rgba(255,255,255,0.08);
-            margin: 16px 0;
-        }
-
-        .total-glow {
-            background: linear-gradient(145deg, rgba(160,168,192,0.1), rgba(255,255,255,0.02));
-            border: 1px solid rgba(160,168,192,0.3);
-            border-radius: 22px;
-            padding: 16px 20px;
-            margin-top: 10px;
-            box-shadow: 0 0 25px rgba(160,168,192,0.15), inset 0 0 10px rgba(160,168,192,0.05);
-        }
-
-        .final-cost {
-            font-size: 1.9rem;
-            font-weight: 800;
-            background: linear-gradient(90deg, #fff, #e0e4f5, #fff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: glowPulse 2s infinite alternate;
-        }
-
-        @keyframes glowPulse {
-            from { text-shadow: 0 0 5px rgba(255,255,255,0.2); }
-            to { text-shadow: 0 0 18px rgba(200,210,240,0.6); }
-        }
-
-        .gray-text {
-            color: #9ea3c2;
-        }
-
-        .footer {
-            padding: 16px 28px 20px;
-            border-top: 1px solid rgba(255,255,255,0.06);
-            text-align: center;
-            font-size: 0.75rem;
-            color: #7a80a0;
-            display: flex;
-            justify-content: center;
-            gap: 24px;
-            flex-wrap: wrap;
-        }
-
-        .counter {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: rgba(255,255,255,0.03);
-            padding: 6px 14px;
-            border-radius: 40px;
-        }
-
-        @media (max-width: 700px) {
-            body { padding: 16px; }
-            .calc-header { padding: 20px 18px; }
-            .calc-header h1 { font-size: 1.4rem; }
-            .calc-body { padding: 20px 18px 16px; }
-            .stats-grid { grid-template-columns: 1fr; gap: 16px; margin: 20px 0 16px; }
-            .final-cost { font-size: 1.4rem; }
-            .flags { gap: 12px; }
-            .flag { font-size: 1.6rem; }
-            .price-row { grid-template-columns: 1fr; gap: 16px; }
-            .footer { padding: 12px 18px 16px; gap: 12px; }
-        }
-    </style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{min-height:100vh;background:url('bg.png') center/cover fixed no-repeat,#0a0806;display:flex;justify-content:center;align-items:center;font-family:'Inter',sans-serif;padding:24px;color:var(--parch)}
+.calc{max-width:1000px;width:100%;position:relative;background:linear-gradient(180deg,rgba(28,19,11,.72),rgba(14,10,7,.8));backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-radius:26px;border:1px solid var(--line);box-shadow:0 34px 70px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,230,180,.06),inset 0 0 60px rgba(0,0,0,.4)}
+.calc::before,.calc::after{content:"";position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold-2),var(--gold-hi),var(--gold-2),transparent);opacity:.5}
+.calc::before{top:0}.calc::after{bottom:0}
+.calc-header{padding:26px 28px 20px;text-align:center;background:linear-gradient(180deg,rgba(240,190,90,.06),transparent);border-bottom:1px solid var(--line)}
+.calc-header h1{font-family:'Cinzel',serif;font-size:2rem;font-weight:800;letter-spacing:3px;background:linear-gradient(180deg,#fff4d6,var(--gold-hi) 34%,var(--gold) 60%,var(--gold-2) 84%,var(--gold-deep));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:18px;filter:drop-shadow(0 2px 3px rgba(0,0,0,.6))}
+.flags{display:flex;justify-content:center;flex-wrap:wrap;gap:14px;margin-top:10px}
+.flag{font-size:2rem;cursor:pointer;transition:all .2s ease;filter:grayscale(.5);opacity:.6}
+.flag:hover{transform:scale(1.15);filter:grayscale(0);opacity:1}
+.flag.active{filter:grayscale(0);opacity:1;transform:scale(1.08);text-shadow:0 0 10px rgba(240,190,90,.6)}
+.calc-body{padding:28px 28px 20px}
+.price-row{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px}
+.field{margin-bottom:24px}
+.field-label{font-size:.8rem;letter-spacing:1.6px;text-transform:uppercase;color:var(--gold);font-weight:700;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:9px}
+input{width:100%;background:rgba(0,0,0,.5);border:1px solid var(--line);border-radius:16px;padding:15px 20px;font-size:1.25rem;color:var(--gold-hi);text-align:center;transition:all .25s ease;outline:none;font-family:'Cinzel',serif;font-weight:700;letter-spacing:1px}
+input:focus{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold),0 0 16px rgba(240,190,90,.28);background:rgba(0,0,0,.62)}
+.stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:22px;margin:28px 0 22px}
+.stat-card{background:linear-gradient(180deg,rgba(0,0,0,.42),rgba(26,16,9,.4));border-radius:20px;padding:20px 18px;border:1px solid rgba(240,190,90,.16);transition:all .3s ease;text-align:center}
+.stat-card:hover{transform:translateY(-4px);box-shadow:0 12px 28px rgba(0,0,0,.5)}
+.stat-title{font-family:'Cinzel',serif;font-size:.9rem;font-weight:700;letter-spacing:1px;color:var(--gold);margin-bottom:16px;display:flex;align-items:center;justify-content:center;gap:8px;padding-bottom:11px;border-bottom:1px solid var(--line)}
+.stat-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:13px;font-size:.92rem;color:#d3c5aa;flex-wrap:wrap;gap:8px}
+.stat-value{font-weight:700;font-size:1rem;background:linear-gradient(90deg,var(--gold),var(--gold-hi));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;font-family:'Cinzel',serif}
+.silver-value,.big-silver{background:linear-gradient(90deg,var(--gold),var(--gold-hi));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;font-weight:700;font-family:'Cinzel',serif}
+.big-silver{font-family:'Cinzel',serif;font-size:1.5rem;text-shadow:0 0 12px rgba(240,190,90,.3)}
+.trainer-panel{background:linear-gradient(180deg,rgba(34,20,10,.6),rgba(12,8,6,.6));border-radius:22px;border:1px solid rgba(240,190,90,.2);padding:22px 24px;margin-top:20px;text-align:center}
+.flex-row{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;margin-bottom:16px;gap:14px}
+.percent-control{display:flex;align-items:center;gap:10px;background:rgba(0,0,0,.55);padding:5px 22px;border-radius:40px;border:1px solid var(--line)}
+.percent-input{width:85px;background:transparent;border:none;padding:8px 0;font-size:1.05rem;font-weight:700;color:var(--gold);text-align:center;outline:none;font-family:'Cinzel',serif}
+hr{border:none;border-top:1px solid var(--line);margin:16px 0}
+.total-glow{background:linear-gradient(135deg,rgba(255,107,46,.14),rgba(224,50,47,.05));border:1px solid rgba(255,120,60,.4);border-radius:18px;padding:16px 22px;margin-top:10px;box-shadow:0 0 30px rgba(255,107,46,.18) inset}
+.final-cost{font-family:'Cinzel',serif;font-size:1.85rem;font-weight:700;background:linear-gradient(90deg,#fff2d0,var(--gold-hi),var(--gold),#ffb347);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 10px rgba(255,190,90,.4));animation:glowPulse 2.4s infinite alternate}
+@keyframes glowPulse{from{filter:drop-shadow(0 0 4px rgba(255,190,90,.2))}to{filter:drop-shadow(0 0 14px rgba(255,190,90,.55))}}
+.gray-text{color:#c9b89c}
+/* игроки */
+.players{margin-top:22px;background:linear-gradient(180deg,rgba(0,0,0,.4),rgba(26,16,9,.4));border:1px solid rgba(240,190,90,.16);border-radius:22px;padding:20px 22px}
+.players-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;gap:12px;flex-wrap:wrap}
+.players-head .stat-title{margin:0;border:none;padding:0}
+.chips{display:flex;flex-wrap:wrap;gap:12px}
+.chip{position:relative;cursor:pointer;background:rgba(40,26,14,.7);border:1px solid rgba(240,190,90,.24);border-radius:16px;padding:12px 16px;min-width:160px;transition:.2s;text-align:left}
+.chip:hover{transform:translateY(-2px);border-color:var(--gold);box-shadow:0 8px 20px rgba(0,0,0,.45)}
+.chip .name{font-family:'Cinzel',serif;font-weight:700;font-size:.95rem;color:var(--gold-hi);display:flex;align-items:center;gap:6px}
+.chip .horses{font-size:.76rem;color:var(--muted);font-family:'Cinzel',serif;margin-top:3px}
+.chip .price{margin-top:6px;font-family:'Cinzel',serif;font-weight:700;font-size:.92rem;background:linear-gradient(90deg,var(--gold),var(--gold-hi));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.chip .del{position:absolute;top:6px;right:9px;color:#9a8a6d;font-size:.85rem;opacity:0;transition:.2s;padding:2px 5px;border-radius:6px}
+.chip:hover .del{opacity:1}
+.chip .del:hover{color:#ff7a5a;background:rgba(255,90,60,.14)}
+.add-form{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+.add-form input{flex:1;min-width:130px;padding:12px 16px;font-size:.98rem;border-radius:14px;font-family:'Inter',sans-serif;font-weight:600;letter-spacing:0}
+.add-form .name-in{text-align:left;color:var(--parch)}
+.add-form #pHorses{font-family:'Cinzel',serif;color:var(--gold-hi);letter-spacing:1px;font-size:1.05rem}
+.btn{cursor:pointer;border:none;border-radius:14px;padding:0 22px;font-weight:700;font-size:.98rem;color:#2a1600;background:linear-gradient(135deg,#ffd76a,var(--gold));transition:.2s;white-space:nowrap}
+.btn:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.hint{font-size:.78rem;color:var(--muted)}
+/* донат */
+.donate-wrap{margin-top:22px;text-align:center}
+.donate-btn{display:inline-flex;align-items:center;gap:10px;text-decoration:none;padding:15px 34px;border-radius:40px;font-family:'Cinzel',serif;font-weight:700;font-size:1.05rem;letter-spacing:.5px;color:#2a1600;background:linear-gradient(135deg,#ffd76a,#ffb03a,#ff8f2e);box-shadow:0 10px 30px rgba(255,150,50,.35),inset 0 1px 0 rgba(255,255,255,.4);transition:.2s;animation:donatePulse 2.6s infinite}
+.donate-btn:hover{transform:translateY(-2px) scale(1.03);box-shadow:0 14px 40px rgba(255,150,50,.55)}
+@keyframes donatePulse{0%,100%{box-shadow:0 10px 30px rgba(255,150,50,.35),inset 0 1px 0 rgba(255,255,255,.4)}50%{box-shadow:0 10px 40px rgba(255,150,50,.62),inset 0 1px 0 rgba(255,255,255,.4)}}
+.footer{padding:16px 28px 20px;border-top:1px solid var(--line);text-align:center;font-size:.74rem;letter-spacing:1px;text-transform:uppercase;color:var(--muted);display:flex;justify-content:center;gap:10px;align-items:center;flex-wrap:wrap}
+.counter{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.03);padding:6px 14px;border-radius:40px}
+.counter b{color:var(--gold);font-family:'Cinzel',serif}
+.dot{width:7px;height:7px;border-radius:50%;background:#39d353;box-shadow:0 0 7px #39d353;animation:blink 2s infinite}
+@keyframes blink{50%{opacity:.35}}
+@media(max-width:700px){
+  body{padding:16px}
+  .calc-header{padding:20px 18px}.calc-header h1{font-size:1.5rem;letter-spacing:2px}
+  .calc-body{padding:20px 18px 16px}
+  .stats-grid{grid-template-columns:1fr;gap:16px;margin:20px 0 16px}
+  .final-cost{font-size:1.4rem}
+  .flags{gap:12px}.flag{font-size:1.6rem}
+  .price-row{grid-template-columns:1fr;gap:16px}
+}
+</style>
 </head>
 <body>
 <div class="calc">
-    <div class="calc-header">
-        <h1 id="title">✦ ШТАБ ТРЕНЕРА ✦</h1>
-        <div class="flags" id="flags">
-            <span class="flag active" data-lang="ru">🇷🇺</span>
-            <span class="flag" data-lang="en">🇬🇧</span>
-            <span class="flag" data-lang="es">🇪🇸</span>
-            <span class="flag" data-lang="it">🇮🇹</span>
-            <span class="flag" data-lang="fr">🇫🇷</span>
-            <span class="flag" data-lang="de">🇩🇪</span>
-            <span class="flag" data-lang="bg">🇧🇬</span>
-        </div>
+  <div class="calc-header">
+    <h1 id="title">✦ ШТАБ ТРЕНЕРА ✦</h1>
+    <div class="flags" id="flags">
+      <span class="flag active" data-lang="ru">🇷🇺</span><span class="flag" data-lang="en">🇬🇧</span><span class="flag" data-lang="es">🇪🇸</span><span class="flag" data-lang="it">🇮🇹</span><span class="flag" data-lang="fr">🇫🇷</span><span class="flag" data-lang="de">🇩🇪</span><span class="flag" data-lang="bg">🇧🇬</span>
     </div>
-    <div class="calc-body">
-        <div class="field">
-            <div class="field-label"><span>⚔️</span> <span id="labelArmy">ЮНИТОВ НА 1 УДАР</span></div>
-            <input type="number" id="armyInput" value="120000" step="1000">
-        </div>
-
-        <div class="price-row">
-            <div class="field">
-                <div class="field-label"><span>🪙</span> <span id="labelBuyPrice">ЦЕНА ПОКУПКИ 1 ЮНИТА</span></div>
-                <input type="number" id="buyPrice" value="760" step="10">
-            </div>
-            <div class="field">
-                <div class="field-label"><span>💀</span> <span id="labelRezPrice">ЦЕНА ВОСКРЕШЕНИЯ 1 ЮНИТА</span></div>
-                <input type="number" id="rezPrice" value="14" step="1">
-            </div>
-        </div>
-
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-title"><span>📉</span> <span id="titleLosses">ТРЕНЕР · ПОТЕРИ</span></div>
-                <div class="stat-row"><span id="lossPerRoundLabel">Потери за 1 раунд</span><span class="stat-value" id="lossPerRound">0</span></div>
-                <div class="stat-row"><span id="lossesForBuildLabel">За 10 раундов (для постройки)</span><span class="stat-value" id="totalLossesForBuild">0</span></div>
-                <div class="stat-row"><span id="lossesForRezLabel">За 11 раундов (для воскрешения)</span><span class="stat-value" id="totalLosses11">0</span></div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-title"><span>🐎</span> <span id="titleRestore">ТРЕНЕР · ВОССТАНОВЛЕНИЕ</span></div>
-                <div class="stat-row"><span id="needToBuildLabel">Нужно построить</span><span class="big-silver" id="trainerNeed">0</span></div>
-                <div class="stat-row"><span id="buyCostLabel">Стоимость покупки</span><span class="silver-value" id="trainerBaseCostBuy">0</span></div>
-                <div class="stat-row"><span id="rezCostLabel">Стоимость воскрешения (75%)</span><span class="silver-value" id="trainerBaseCostRez">0</span></div>
-            </div>
-        </div>
-
-        <div class="trainer-panel">
-            <div class="flex-row">
-                <span class="stat-title" style="border:none; padding:0;"><span>🧑‍🏫</span> <span id="trainerFeeLabel">НАЦЕНКА ТРЕНЕРА</span></span>
-                <div class="percent-control">
-                    <input type="number" id="trainerPercent" class="percent-input" value="30" step="1" min="0">
-                    <span style="color:#a0a8c0;">%</span>
-                </div>
-            </div>
-            <div class="flex-row">
-                <span class="gray-text" id="feeAmountLabel">➕ Сумма наценки</span>
-                <span class="silver-value" id="trainerFee">0</span>
-            </div>
-            <hr>
-            <div class="flex-row total-glow">
-                <span style="font-weight: 600;" id="totalLabel">💰 ОБЩАЯ СТОИМОСТЬ</span>
-                <span class="final-cost" id="totalCombined">0</span>
-            </div>
-        </div>
+  </div>
+  <div class="calc-body">
+    <div class="field">
+      <div class="field-label"><span>⚔️</span> <span id="labelArmy">ЮНИТОВ НА 1 УДАР</span></div>
+      <input type="text" inputmode="numeric" id="armyInput" value="120 000" min="0">
+    </div>
+    <div class="price-row">
+      <div class="field">
+        <div class="field-label"><span>🪙</span> <span id="labelBuyPrice">ЦЕНА ПОКУПКИ 1 ЮНИТА</span></div>
+        <input type="number" id="buyPrice" value="760" step="10" min="0">
+      </div>
+      <div class="field">
+        <div class="field-label"><span>💀</span> <span id="labelRezPrice">ЦЕНА ВОСКРЕШЕНИЯ 1 ЮНИТА</span></div>
+        <input type="number" id="rezPrice" value="14" step="1" min="0">
+      </div>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-title"><span>📉</span> <span id="titleLosses">ТРЕНЕР · ПОТЕРИ</span></div>
+        <div class="stat-row"><span id="lossPerRoundLabel">Потери за 1 раунд</span><span class="stat-value" id="lossPerRound">0</span></div>
+        <div class="stat-row"><span id="lossesForBuildLabel">За 10 раундов (для постройки)</span><span class="stat-value" id="totalLossesForBuild">0</span></div>
+        <div class="stat-row"><span id="lossesForRezLabel">За 11 раундов (для воскрешения)</span><span class="stat-value" id="totalLosses11">0</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-title"><span>🐎</span> <span id="titleRestore">ТРЕНЕР · ВОССТАНОВЛЕНИЕ</span></div>
+        <div class="stat-row"><span id="needToBuildLabel">Нужно построить</span><span class="big-silver" id="trainerNeed">0</span></div>
+        <div class="stat-row"><span id="buyCostLabel">Стоимость покупки</span><span class="silver-value" id="trainerBaseCostBuy">0</span></div>
+        <div class="stat-row"><span id="rezCostLabel">Стоимость воскрешения (75%)</span><span class="silver-value" id="trainerBaseCostRez">0</span></div>
+      </div>
+    </div>
+    <div class="trainer-panel">
+      <div class="flex-row">
+        <span class="stat-title" style="border:none;padding:0"><span>🧑‍🏫</span> <span id="trainerFeeLabel">НАЦЕНКА ТРЕНЕРА</span></span>
+        <div class="percent-control"><input type="number" id="trainerPercent" class="percent-input" value="30" step="1" min="0"><span style="color:var(--gold-2);font-weight:700;">%</span></div>
+      </div>
+      <div class="flex-row">
+        <span class="gray-text" id="feeAmountLabel">➕ Сумма наценки</span>
+        <span class="silver-value" id="trainerFee">0</span>
+      </div>
+      <hr>
+      <div class="flex-row total-glow">
+        <span style="font-weight:700;font-family:'Cinzel',serif;color:#ffe0b0" id="totalLabel">💰 ОБЩАЯ СТОИМОСТЬ</span>
+        <span class="final-cost" id="totalCombined">0</span>
+      </div>
     </div>
 
-    <div class="footer">
-        <div class="counter">
-            <span>👥</span>
-            <span id="totalVisits">—</span>
-            <span>всего посещений</span>
-        </div>
-        <div class="counter">
-            <span>🟢</span>
-            <span id="onlineNow">—</span>
-            <span>сейчас онлайн</span>
-        </div>
+    <div class="players">
+      <div class="players-head">
+        <div class="stat-title"><span>🧑‍🤝‍🧑</span> <span id="playersTitle">ИГРОКИ</span></div>
+        <span class="hint" id="playersHint">Клик по плашке — подставить значение</span>
+      </div>
+      <div class="chips" id="chips"></div>
+      <div class="add-form">
+        <input class="name-in" id="pName" maxlength="24" placeholder="Имя (напр. Цыганёнок)">
+        <input type="text" inputmode="numeric" id="pHorses" placeholder="Юнитов (напр. 300000)">
+        <button class="btn" id="addBtn">＋ Добавить</button>
+      </div>
     </div>
+
+    <div class="donate-wrap">
+      <a class="donate-btn" id="donateBtn" href="https://www.donationalerts.com/r/greg2789" target="_blank" rel="noopener">💛 <span id="donateLabel">Поддержать проект</span></a>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="counter"><span class="dot"></span><span>👥</span><b id="totalVisits">—</b><span id="visitsLabel">всего посещений</span></div>
+  </div>
 </div>
 
 <script>
-    // ========== СЧЁТЧИКИ (рабочие) ==========
-    // ========== СЧЁТЧИКИ ==========
-async function updateTotalCounter() {
-    const namespace = "trainer_hq";
-    const key = "visits_2025";
-    const url = `https://api.countapi.xyz/hit/${namespace}/${key}`;
-    
-    try {
-        const response = await fetch(url);
-        const data = await response.json();
-        if (data && data.value !== undefined) {
-            document.getElementById('totalVisits').innerText = data.value.toLocaleString('ru-RU');
-        } else {
-            document.getElementById('totalVisits').innerText = "128";
-        }
-    } catch (e) {
-        console.warn("Счётчик временно недоступен");
-        document.getElementById('totalVisits').innerText = "99+";
-    }
+(async function(){const el=document.getElementById('totalVisits');
+  try{const r=await fetch('https://api.counterapi.dev/v1/shtab-trenera/visits/up');const d=await r.json();
+    el.textContent=(d&&typeof d.count==='number')?d.count.toLocaleString('ru-RU'):'—';}catch(e){el.textContent='—';}})();
+
+const translations={
+ ru:{title:"✦ ШТАБ ТРЕНЕРА ✦",labelArmy:"ЮНИТОВ НА 1 УДАР",labelBuyPrice:"ЦЕНА ПОКУПКИ 1 ЮНИТА",labelRezPrice:"ЦЕНА ВОСКРЕШЕНИЯ 1 ЮНИТА",titleLosses:"ТРЕНЕР · ПОТЕРИ",lossPerRoundLabel:"Потери за 1 раунд",lossesForBuildLabel:"За 10 раундов (для постройки)",lossesForRezLabel:"За 11 раундов (для воскрешения)",titleRestore:"ТРЕНЕР · ВОССТАНОВЛЕНИЕ",needToBuildLabel:"Нужно построить",buyCostLabel:"Стоимость покупки",rezCostLabel:"Стоимость воскрешения (75%)",trainerFeeLabel:"НАЦЕНКА ТРЕНЕРА",feeAmountLabel:"➕ Сумма наценки",totalLabel:"💰 ОБЩАЯ СТОИМОСТЬ",playersTitle:"ИГРОКИ",playersHint:"Клик по плашке — подставить значение",addBtn:"＋ Добавить",namePh:"Имя (напр. Цыганёнок)",horsesPh:"Юнитов (напр. 300000)",donateLabel:"Поддержать проект",visitsLabel:"всего посещений"},
+ en:{title:"✦ TRAINER'S HQ ✦",labelArmy:"UNITS PER 1 ATTACK",labelBuyPrice:"PURCHASE PRICE PER 1 UNIT",labelRezPrice:"RESURRECTION PRICE PER 1 UNIT",titleLosses:"TRAINER · LOSSES",lossPerRoundLabel:"Losses per round",lossesForBuildLabel:"For 10 rounds (for construction)",lossesForRezLabel:"For 11 rounds (for resurrection)",titleRestore:"TRAINER · RESTORATION",needToBuildLabel:"Need to build",buyCostLabel:"Purchase cost",rezCostLabel:"Resurrection cost (75%)",trainerFeeLabel:"TRAINER'S MARKUP",feeAmountLabel:"➕ Markup amount",totalLabel:"💰 TOTAL COST",playersTitle:"PLAYERS",playersHint:"Click a card to load its value",addBtn:"＋ Add",namePh:"Name (e.g. Gypsy)",horsesPh:"Units (e.g. 300000)",donateLabel:"Support the project",visitsLabel:"total visits"},
+ es:{title:"✦ CUARTEL DEL ENTRENADOR ✦",labelArmy:"UNIDADES POR 1 ATAQUE",labelBuyPrice:"PRECIO DE COMPRA POR 1 UNIDAD",labelRezPrice:"PRECIO DE RESURRECCIÓN POR 1 UNIDAD",titleLosses:"ENTRENADOR · PÉRDIDAS",lossPerRoundLabel:"Pérdidas por ronda",lossesForBuildLabel:"Por 10 rondas (para construcción)",lossesForRezLabel:"Por 11 rondas (para resurrección)",titleRestore:"ENTRENADOR · RESTAURACIÓN",needToBuildLabel:"Necesario construir",buyCostLabel:"Costo de compra",rezCostLabel:"Costo de resurrección (75%)",trainerFeeLabel:"RECARGO DEL ENTRENADOR",feeAmountLabel:"➕ Monto del recargo",totalLabel:"💰 COSTO TOTAL",donateLabel:"Apoyar el proyecto"},
+ it:{title:"✦ QG DELL'ALLENATORE ✦",labelArmy:"UNITÀ PER 1 ATTACCO",labelBuyPrice:"PREZZO D'ACQUISTO PER 1 UNITÀ",labelRezPrice:"PREZZO DI RESURREZIONE PER 1 UNITÀ",titleLosses:"ALLENATORE · PERDITE",lossPerRoundLabel:"Perdite per round",lossesForBuildLabel:"Per 10 round (per la costruzione)",lossesForRezLabel:"Per 11 round (per la resurrezione)",titleRestore:"ALLENATORE · RESTAURO",needToBuildLabel:"Necessario costruire",buyCostLabel:"Costo d'acquisto",rezCostLabel:"Costo di resurrezione (75%)",trainerFeeLabel:"MARGINE DELL'ALLENATORE",feeAmountLabel:"➕ Importo del margine",totalLabel:"💰 COSTO TOTALE",donateLabel:"Sostieni il progetto"},
+ fr:{title:"✦ QG DE L'ENTRAÎNEUR ✦",labelArmy:"UNITÉS PAR 1 ATTAQUE",labelBuyPrice:"PRIX D'ACHAT POUR 1 UNITÉ",labelRezPrice:"PRIX DE RÉSURRECTION POUR 1 UNITÉ",titleLosses:"ENTRAÎNEUR · PERTES",lossPerRoundLabel:"Pertes par round",lossesForBuildLabel:"Pour 10 rounds (pour la construction)",lossesForRezLabel:"Pour 11 rounds (pour la résurrection)",titleRestore:"ENTRAÎNEUR · RESTAURATION",needToBuildLabel:"À construire",buyCostLabel:"Coût d'achat",rezCostLabel:"Coût de résurrection (75%)",trainerFeeLabel:"MARGE DE L'ENTRAÎNEUR",feeAmountLabel:"➕ Montant de la marge",totalLabel:"💰 COÛT TOTAL",donateLabel:"Soutenir le projet"},
+ de:{title:"✦ HAUPTQUARTIER DES TRAINERS ✦",labelArmy:"EINHEITEN PRO 1 ANGRIFF",labelBuyPrice:"KAUFPREIS PRO 1 EINHEIT",labelRezPrice:"WIEDERBELEBUNGSPREIS PRO 1 EINHEIT",titleLosses:"TRAINER · VERLUSTE",lossPerRoundLabel:"Verluste pro Runde",lossesForBuildLabel:"Für 10 Runden (für den Bau)",lossesForRezLabel:"Für 11 Runden (für die Wiederbelebung)",titleRestore:"TRAINER · WIEDERHERSTELLUNG",needToBuildLabel:"Müssen bauen",buyCostLabel:"Kaufkosten",rezCostLabel:"Wiederbelebungskosten (75%)",trainerFeeLabel:"AUFSCHLAG DES TRAINERS",feeAmountLabel:"➕ Aufschlagsbetrag",totalLabel:"💰 GESAMTKOSTEN",donateLabel:"Projekt unterstützen"},
+ bg:{title:"✦ ЩАБ НА ТРЕНЬОРА ✦",labelArmy:"ЮНИТИ ЗА 1 АТАКА",labelBuyPrice:"ЦЕНА ЗА ПОКУПКА НА 1 ЮНИТ",labelRezPrice:"ЦЕНА ЗА ВЪЗКРЕСЕНИЕ НА 1 ЮНИТ",titleLosses:"ТРЕНЬОР · ЗАГУБИ",lossPerRoundLabel:"Загуби на рунд",lossesForBuildLabel:"За 10 рунда (за строеж)",lossesForRezLabel:"За 11 рунда (за възкресение)",titleRestore:"ТРЕНЬОР · ВЪЗСТАНОВЯВАНЕ",needToBuildLabel:"Трябва да се построи",buyCostLabel:"Цена на покупка",rezCostLabel:"Цена на възкресение (75%)",trainerFeeLabel:"НАДЦЕНКА НА ТРЕНЬОРА",feeAmountLabel:"➕ Сума на надценката",totalLabel:"💰 ОБЩА СТОЙНОСТ",donateLabel:"Подкрепи проекта"}
+};
+let currentLang='ru';
+function tr(k){return (translations[currentLang]&&translations[currentLang][k])||translations.en[k]||translations.ru[k]||k;}
+const textKeys=["title","labelArmy","labelBuyPrice","labelRezPrice","titleLosses","lossPerRoundLabel","lossesForBuildLabel","lossesForRezLabel","titleRestore","needToBuildLabel","buyCostLabel","rezCostLabel","trainerFeeLabel","feeAmountLabel","totalLabel","playersTitle","playersHint","donateLabel","visitsLabel"];
+function setLanguage(lang){currentLang=lang;
+  textKeys.forEach(k=>{const el=document.getElementById(k);if(el)el.innerText=tr(k);});
+  document.getElementById('addBtn').innerText=tr('addBtn');
+  document.getElementById('pName').placeholder=tr('namePh');
+  document.getElementById('pHorses').placeholder=tr('horsesPh');
+  document.querySelectorAll('.flag').forEach(f=>f.classList.toggle('active',f.dataset.lang===lang));
+  try{localStorage.setItem('shtab_lang',lang);}catch(e){}}
+
+function fmt(n){return Math.floor(n).toLocaleString('ru-RU');}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+const $=id=>document.getElementById(id);
+const armyInput=$('armyInput'),buyPriceInput=$('buyPrice'),rezPriceInput=$('rezPrice'),trainerPercentInput=$('trainerPercent');
+
+/* ===== разделение разрядов в текстовых числовых полях ===== */
+function digitsOnly(s){return (s||'').replace(/\D/g,'');}
+function formatIntInput(el){
+  const raw=el.value, sel=el.selectionStart||0;
+  const before=digitsOnly(raw.slice(0,sel)).length;
+  const d=digitsOnly(raw);
+  if(d===''){el.value='';return;}
+  const f=parseInt(d,10).toLocaleString('ru-RU'); el.value=f;
+  let pos=0,c=0; while(pos<f.length&&c<before){if(/\d/.test(f[pos]))c++;pos++;}
+  try{el.setSelectionRange(pos,pos);}catch(e){}
 }
+function setArmy(n){armyInput.value=Number(n||0).toLocaleString('ru-RU');}
 
-function updateOnline() {
-    const STORAGE_KEY = "trainer_online_heartbeat";
-    const TIMEOUT_MS = 5 * 60 * 1000;
-    const now = Date.now();
-    let heartbeats = [];
-    try {
-        const stored = localStorage.getItem(STORAGE_KEY);
-        if (stored) {
-            heartbeats = JSON.parse(stored);
-            heartbeats = heartbeats.filter(t => now - t < TIMEOUT_MS);
-        }
-        const lastBeat = heartbeats[heartbeats.length - 1];
-        if (!lastBeat || (now - lastBeat) > 60000) {
-            heartbeats.push(now);
-        }
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(heartbeats));
-        document.getElementById('onlineNow').innerText = heartbeats.length;
-    } catch(e) {
-        document.getElementById('onlineNow').innerText = "~1";
-    }
+/* ===== ФОРМУЛА — ИЗНАЧАЛЬНАЯ, НЕ ИЗМЕНЕНА ===== */
+const REZ_PERCENT=0.75,ROUNDS_FOR_BUILD=10,ROUNDS_FOR_REZ=11;
+function calcTotal(army,buyPrice,rezPrice,trainerPct){
+  const lossPerRound=army/4;
+  const totalLossesForBuild=lossPerRound*ROUNDS_FOR_BUILD;
+  const trainerNeed=Math.ceil(totalLossesForBuild+army);
+  const trainerBaseCostBuy=trainerNeed*buyPrice;
+  const rezAmount=army*REZ_PERCENT*ROUNDS_FOR_REZ;
+  const trainerBaseCostRez=rezAmount*rezPrice;
+  const totalBeforeFee=trainerBaseCostBuy+trainerBaseCostRez;
+  const trainerFee=totalBeforeFee*(trainerPct/100);
+  return {lossPerRound,totalLossesForBuild,trainerNeed,totalLosses11:lossPerRound*ROUNDS_FOR_REZ,
+          trainerBaseCostBuy,trainerBaseCostRez,trainerFee,totalCombined:totalBeforeFee+trainerFee};
 }
-
-// Запускаем счётчики
-updateOnline();
-setInterval(updateOnline, 60000);
-updateTotalCounter();
-    // ========== ОСНОВНАЯ ЛОГИКА КАЛЬКУЛЯТОРА ==========
-    const translations = {
-        ru: {
-            title: "✦ ШТАБ ТРЕНЕРА ✦",
-            labelArmy: "ЮНИТОВ НА 1 УДАР",
-            labelBuyPrice: "ЦЕНА ПОКУПКИ 1 ЮНИТА",
-            labelRezPrice: "ЦЕНА ВОСКРЕШЕНИЯ 1 ЮНИТА",
-            titleLosses: "ТРЕНЕР · ПОТЕРИ",
-            lossPerRoundLabel: "Потери за 1 раунд",
-            lossesForBuildLabel: "За 10 раундов (для постройки)",
-            lossesForRezLabel: "За 11 раундов (для воскрешения)",
-            titleRestore: "ТРЕНЕР · ВОССТАНОВЛЕНИЕ",
-            needToBuildLabel: "Нужно построить",
-            buyCostLabel: "Стоимость покупки",
-            rezCostLabel: "Стоимость воскрешения (75%)",
-            trainerFeeLabel: "НАЦЕНКА ТРЕНЕРА",
-            feeAmountLabel: "➕ Сумма наценки",
-            totalLabel: "💰 ОБЩАЯ СТОИМОСТЬ"
-        },
-        en: {
-            title: "✦ TRAINER'S HQ ✦",
-            labelArmy: "UNITS PER 1 ATTACK",
-            labelBuyPrice: "PURCHASE PRICE PER 1 UNIT",
-            labelRezPrice: "RESURRECTION PRICE PER 1 UNIT",
-            titleLosses: "TRAINER · LOSSES",
-            lossPerRoundLabel: "Losses per round",
-            lossesForBuildLabel: "For 10 rounds (for construction)",
-            lossesForRezLabel: "For 11 rounds (for resurrection)",
-            titleRestore: "TRAINER · RESTORATION",
-            needToBuildLabel: "Need to build",
-            buyCostLabel: "Purchase cost",
-            rezCostLabel: "Resurrection cost (75%)",
-            trainerFeeLabel: "TRAINER'S MARKUP",
-            feeAmountLabel: "➕ Markup amount",
-            totalLabel: "💰 TOTAL COST"
-        },
-        es: {
-            title: "✦ CUARTEL DEL ENTRENADOR ✦",
-            labelArmy: "UNIDADES POR 1 ATAQUE",
-            labelBuyPrice: "PRECIO DE COMPRA POR 1 UNIDAD",
-            labelRezPrice: "PRECIO DE RESURRECCIÓN POR 1 UNIDAD",
-            titleLosses: "ENTRENADOR · PÉRDIDAS",
-            lossPerRoundLabel: "Pérdidas por ronda",
-            lossesForBuildLabel: "Por 10 rondas (para construcción)",
-            lossesForRezLabel: "Por 11 rondas (para resurrección)",
-            titleRestore: "ENTRENADOR · RESTAURACIÓN",
-            needToBuildLabel: "Necesario construir",
-            buyCostLabel: "Costo de compra",
-            rezCostLabel: "Costo de resurrección (75%)",
-            trainerFeeLabel: "RECARGO DEL ENTRENADOR",
-            feeAmountLabel: "➕ Monto del recargo",
-            totalLabel: "💰 COSTO TOTAL"
-        },
-        it: {
-            title: "✦ QUARTIER GENERALE DELL'ALLENATORE ✦",
-            labelArmy: "UNITÀ PER 1 ATTACCO",
-            labelBuyPrice: "PREZZO D'ACQUISTO PER 1 UNITÀ",
-            labelRezPrice: "PREZZO DI RESURREZIONE PER 1 UNITÀ",
-            titleLosses: "ALLENATORE · PERDITE",
-            lossPerRoundLabel: "Perdite per round",
-            lossesForBuildLabel: "Per 10 round (per la costruzione)",
-            lossesForRezLabel: "Per 11 round (per la resurrezione)",
-            titleRestore: "ALLENATORE · RESTAURO",
-            needToBuildLabel: "Necessario costruire",
-            buyCostLabel: "Costo d'acquisto",
-            rezCostLabel: "Costo di resurrezione (75%)",
-            trainerFeeLabel: "MARGINE DELL'ALLENATORE",
-            feeAmountLabel: "➕ Importo del margine",
-            totalLabel: "💰 COSTO TOTALE"
-        },
-        fr: {
-            title: "✦ QUARTIER GÉNÉRAL DE L'ENTRAÎNEUR ✦",
-            labelArmy: "UNITÉS PAR 1 ATTAQUE",
-            labelBuyPrice: "PRIX D'ACHAT POUR 1 UNITÉ",
-            labelRezPrice: "PRIX DE RÉSURRECTION POUR 1 UNITÉ",
-            titleLosses: "ENTRAÎNEUR · PERTES",
-            lossPerRoundLabel: "Pertes par round",
-            lossesForBuildLabel: "Pour 10 rounds (pour la construction)",
-            lossesForRezLabel: "Pour 11 rounds (pour la résurrection)",
-            titleRestore: "ENTRAÎNEUR · RESTAURATION",
-            needToBuildLabel: "À construire",
-            buyCostLabel: "Coût d'achat",
-            rezCostLabel: "Coût de résurrection (75%)",
-            trainerFeeLabel: "MARGE DE L'ENTRAÎNEUR",
-            feeAmountLabel: "➕ Montant de la marge",
-            totalLabel: "💰 COÛT TOTAL"
-        },
-        de: {
-            title: "✦ HAUPTQUARTIER DES TRAINERS ✦",
-            labelArmy: "EINHEITEN PRO 1 ANGRIFF",
-            labelBuyPrice: "KAUFPREIS PRO 1 EINHEIT",
-            labelRezPrice: "WIEDERBELEBUNGSPREIS PRO 1 EINHEIT",
-            titleLosses: "TRAINER · VERLUSTE",
-            lossPerRoundLabel: "Verluste pro Runde",
-            lossesForBuildLabel: "Für 10 Runden (für den Bau)",
-            lossesForRezLabel: "Für 11 Runden (für die Wiederbelebung)",
-            titleRestore: "TRAINER · WIEDERHERSTELLUNG",
-            needToBuildLabel: "Müssen bauen",
-            buyCostLabel: "Kaufkosten",
-            rezCostLabel: "Wiederbelebungskosten (75%)",
-            trainerFeeLabel: "AUFSCHLAG DES TRAINERS",
-            feeAmountLabel: "➕ Aufschlagsbetrag",
-            totalLabel: "💰 GESAMTKOSTEN"
-        },
-        bg: {
-            title: "✦ ЩАБ НА ТРЕНЬОРА ✦",
-            labelArmy: "ЮНИТИ ЗА 1 АТАКА",
-            labelBuyPrice: "ЦЕНА ЗА ПОКУПКА НА 1 ЮНИТ",
-            labelRezPrice: "ЦЕНА ЗА ВЪЗКРЕСЕНИЕ НА 1 ЮНИТ",
-            titleLosses: "ТРЕНЬОР · ЗАГУБИ",
-            lossPerRoundLabel: "Загуби на рунд",
-            lossesForBuildLabel: "За 10 рунда (за строеж)",
-            lossesForRezLabel: "За 11 рунда (за възкресение)",
-            titleRestore: "ТРЕНЬОР · ВЪЗСТАНОВЯВАНЕ",
-            needToBuildLabel: "Трябва да се построи",
-            buyCostLabel: "Цена на покупка",
-            rezCostLabel: "Цена на възкресение (75%)",
-            trainerFeeLabel: "НАДЦЕНКА НА ТРЕНЬОРА",
-            feeAmountLabel: "➕ Сума на надценката",
-            totalLabel: "💰 ОБЩА СТОЙНОСТ"
-        }
-    };
-
-    let currentLang = 'ru';
-
-    const elements = {
-        title: document.getElementById('title'),
-        labelArmy: document.getElementById('labelArmy'),
-        labelBuyPrice: document.getElementById('labelBuyPrice'),
-        labelRezPrice: document.getElementById('labelRezPrice'),
-        titleLosses: document.getElementById('titleLosses'),
-        lossPerRoundLabel: document.getElementById('lossPerRoundLabel'),
-        lossesForBuildLabel: document.getElementById('lossesForBuildLabel'),
-        lossesForRezLabel: document.getElementById('lossesForRezLabel'),
-        titleRestore: document.getElementById('titleRestore'),
-        needToBuildLabel: document.getElementById('needToBuildLabel'),
-        buyCostLabel: document.getElementById('buyCostLabel'),
-        rezCostLabel: document.getElementById('rezCostLabel'),
-        trainerFeeLabel: document.getElementById('trainerFeeLabel'),
-        feeAmountLabel: document.getElementById('feeAmountLabel'),
-        totalLabel: document.getElementById('totalLabel')
-    };
-
-    function setLanguage(lang) {
-        currentLang = lang;
-        const t = translations[lang];
-        if (!t) return;
-        for (const key in elements) {
-            if (elements[key] && t[key]) {
-                elements[key].innerText = t[key];
-            }
-        }
-        document.querySelectorAll('.flag').forEach(flag => {
-            if (flag.dataset.lang === lang) {
-                flag.classList.add('active');
-            } else {
-                flag.classList.remove('active');
-            }
-        });
-    }
-
-    function fmt(n) { return Math.floor(n).toLocaleString('ru-RU'); }
-
-    const armyInput = document.getElementById('armyInput');
-    const buyPriceInput = document.getElementById('buyPrice');
-    const rezPriceInput = document.getElementById('rezPrice');
-    const trainerPercentInput = document.getElementById('trainerPercent');
-
-    const lossPerRoundSpan = document.getElementById('lossPerRound');
-    const totalLossesForBuildSpan = document.getElementById('totalLossesForBuild');
-    const totalLosses11Span = document.getElementById('totalLosses11');
-    const trainerNeedSpan = document.getElementById('trainerNeed');
-    const trainerBaseCostBuySpan = document.getElementById('trainerBaseCostBuy');
-    const trainerBaseCostRezSpan = document.getElementById('trainerBaseCostRez');
-    const trainerFeeSpan = document.getElementById('trainerFee');
-    const totalCombinedSpan = document.getElementById('totalCombined');
-
-    const REZ_PERCENT = 0.75;
-    const ROUNDS_FOR_BUILD = 10;
-    const ROUNDS_FOR_REZ = 11;
-
-    function update() {
-        let army = parseFloat(armyInput.value) || 0;
-        let buyPrice = parseFloat(buyPriceInput.value) || 0;
-        let rezPrice = parseFloat(rezPriceInput.value) || 0;
-        let trainerPct = parseFloat(trainerPercentInput.value) || 0;
-
-        let lossPerRound = army / 4;
-        let totalLossesForBuild = lossPerRound * ROUNDS_FOR_BUILD;
-        let trainerNeedRaw = totalLossesForBuild + army;
-        let trainerNeed = Math.ceil(trainerNeedRaw);
-        let totalLosses11 = lossPerRound * ROUNDS_FOR_REZ;
-
-        let trainerBaseCostBuy = trainerNeed * buyPrice;
-        let rezAmount = army * REZ_PERCENT * ROUNDS_FOR_REZ;
-        let trainerBaseCostRez = rezAmount * rezPrice;
-
-        let totalBeforeFee = trainerBaseCostBuy + trainerBaseCostRez;
-        let trainerFee = totalBeforeFee * (trainerPct / 100);
-        let totalCombined = totalBeforeFee + trainerFee;
-
-        lossPerRoundSpan.innerText = fmt(lossPerRound);
-        totalLossesForBuildSpan.innerText = fmt(totalLossesForBuild);
-        totalLosses11Span.innerText = fmt(totalLosses11);
-        trainerNeedSpan.innerText = fmt(trainerNeed);
-        trainerBaseCostBuySpan.innerText = fmt(trainerBaseCostBuy) + ' 🪙';
-        trainerBaseCostRezSpan.innerText = fmt(trainerBaseCostRez) + ' 🪙';
-        trainerFeeSpan.innerText = fmt(trainerFee) + ' 🪙';
-        totalCombinedSpan.innerText = fmt(totalCombined) + ' 🪙';
-    }
-
-    armyInput.addEventListener('input', update);
-    buyPriceInput.addEventListener('input', update);
-    rezPriceInput.addEventListener('input', update);
-    trainerPercentInput.addEventListener('input', update);
-    
-    document.querySelectorAll('.flag').forEach(flag => {
-        flag.addEventListener('click', () => {
-            setLanguage(flag.dataset.lang);
-        });
-    });
-    
-    setLanguage('ru');
-    update();
-    updateTotalCounter();
+function readInputs(){return{army:parseInt(digitsOnly(armyInput.value))||0,buyPrice:parseFloat(buyPriceInput.value)||0,
+  rezPrice:parseFloat(rezPriceInput.value)||0,pct:parseFloat(trainerPercentInput.value)||0};}
+function update(){
+  const p=readInputs(); const r=calcTotal(p.army,p.buyPrice,p.rezPrice,p.pct);
+  $('lossPerRound').innerText=fmt(r.lossPerRound);
+  $('totalLossesForBuild').innerText=fmt(r.totalLossesForBuild);
+  $('totalLosses11').innerText=fmt(r.totalLosses11);
+  $('trainerNeed').innerText=fmt(r.trainerNeed);
+  $('trainerBaseCostBuy').innerText=fmt(r.trainerBaseCostBuy)+' 🪙';
+  $('trainerBaseCostRez').innerText=fmt(r.trainerBaseCostRez)+' 🪙';
+  $('trainerFee').innerText=fmt(r.trainerFee)+' 🪙';
+  $('totalCombined').innerText=fmt(r.totalCombined)+' 🪙';
+  saveValues(); renderChips();
+}
+function saveValues(){try{localStorage.setItem('shtab_vals',JSON.stringify({army:digitsOnly(armyInput.value),buyPrice:buyPriceInput.value,rezPrice:rezPriceInput.value,pct:trainerPercentInput.value}));}catch(e){}}
+function loadValues(){try{const v=JSON.parse(localStorage.getItem('shtab_vals')||'null');if(!v)return;
+  if(v.army!=null&&v.army!=='')setArmy(parseInt(digitsOnly(String(v.army)))||0);if(v.buyPrice!=null)buyPriceInput.value=v.buyPrice;
+  if(v.rezPrice!=null)rezPriceInput.value=v.rezPrice;if(v.pct!=null)trainerPercentInput.value=v.pct;}catch(e){}}
+let players=[];
+function loadPlayers(){try{players=JSON.parse(localStorage.getItem('shtab_players')||'null');}catch(e){players=null;}
+  if(!players){players=[{name:'Цыганёнок',horses:300000}];savePlayers();}}
+function savePlayers(){try{localStorage.setItem('shtab_players',JSON.stringify(players));}catch(e){}}
+function renderChips(){
+  const p=readInputs(); const box=$('chips'); box.innerHTML='';
+  players.forEach((pl,i)=>{
+    const r=calcTotal(pl.horses,p.buyPrice,p.rezPrice,p.pct);
+    const el=document.createElement('div'); el.className='chip';
+    el.innerHTML='<div class="name">🐎 '+esc(pl.name)+'</div><div class="horses">'+fmt(pl.horses)+'</div><div class="price">'+fmt(r.totalCombined)+' 🪙</div><span class="del" title="Удалить">✕</span>';
+    el.addEventListener('click',ev=>{
+      if(ev.target.classList.contains('del')){players.splice(i,1);savePlayers();renderChips();return;}
+      setArmy(pl.horses);update();window.scrollTo({top:0,behavior:'smooth'});});
+    box.appendChild(el);
+  });
+}
+$('addBtn').addEventListener('click',()=>{
+  const name=$('pName').value.trim(); const horses=parseInt(digitsOnly($('pHorses').value))||0;
+  if(!name||!horses)return;
+  players.push({name,horses}); savePlayers(); $('pName').value='';$('pHorses').value=''; renderChips();
+});
+[buyPriceInput,rezPriceInput,trainerPercentInput].forEach(i=>i.addEventListener('input',update));
+armyInput.addEventListener('input',()=>{formatIntInput(armyInput);update();});
+$('pHorses').addEventListener('input',function(){formatIntInput(this);});
+document.querySelectorAll('.flag').forEach(f=>f.addEventListener('click',()=>setLanguage(f.dataset.lang)));
+let sl='ru';try{sl=localStorage.getItem('shtab_lang')||'ru';}catch(e){}
+loadValues();formatIntInput(armyInput);loadPlayers();setLanguage(sl);update();
 </script>
 </body>
 </html>

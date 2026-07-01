@@ -160,18 +160,43 @@ hr{border:none;border-top:1px solid var(--line);margin:16px 0}
   </div>
 
   <div class="footer">
-    <div class="counter"><span class="dot"></span><span>👥</span><b id="totalVisits">—</b><span id="visitsLabel">всего посещений</span></div>
+    <div class="counter"><span>👥</span><b id="totalVisits">—</b><span id="visitsLabel">игроков</span></div>
+    <div class="counter"><span class="dot"></span><b id="onlineNow">—</b><span id="onlineLabel">онлайн</span></div>
   </div>
 </div>
 
 <script>
-(async function(){const el=document.getElementById('totalVisits');
-  try{const r=await fetch('https://api.counterapi.dev/v1/shtab-trenera/visits/up');const d=await r.json();
-    el.textContent=(d&&typeof d.count==='number')?d.count.toLocaleString('ru-RU'):'—';}catch(e){el.textContent='—';}})();
+/* ===== счётчики: уникальные ПО IP + онлайн (присутствие) ===== */
+(function(){
+  const NS='https://api.counterapi.dev/v1/shtab-trenera';
+  const NSIP='https://api.counterapi.dev/v1/shtab-trenera-ip';
+  const elTotal=document.getElementById('totalVisits'), elOnline=document.getElementById('onlineNow');
+  function hash(s){let h=5381;for(let i=0;i<s.length;i++)h=((h<<5)+h+s.charCodeAt(i))>>>0;return h.toString(36);}
+  async function readNum(url){try{const r=await fetch(url);const d=await r.json();return (d&&typeof d.count==='number')?d.count:null;}catch(e){return null;}}
+  function show(el,n){if(el)el.textContent=(n==null)?'—':n.toLocaleString('ru-RU');}
+
+  // 1) уникальные по IP: +1 к общему только при ПЕРВОМ заходе с этого IP
+  (async function(){
+    let ipk='anon';
+    try{const r=await fetch('https://api.ipify.org?format=json');const j=await r.json();if(j&&j.ip)ipk='ip'+hash(j.ip);}catch(e){}
+    const c=await readNum(NSIP+'/'+ipk+'/up');
+    if(c===1){await fetch(NS+'/uniques/up').catch(()=>{});}
+    show(elTotal, await readNum(NS+'/uniques/'));
+  })();
+
+  // 2) онлайн: +1 при появлении вкладки, -1 при уходе/закрытии
+  let added=false;
+  async function up(){if(added)return;added=true;await fetch(NS+'/online/up').catch(()=>{});show(elOnline,await readNum(NS+'/online/'));}
+  function down(){if(!added)return;added=false;try{fetch(NS+'/online/down',{keepalive:true});}catch(e){}}
+  document.addEventListener('visibilitychange',()=>{document.hidden?down():up();});
+  window.addEventListener('pagehide',down);
+  if(!document.hidden)up();
+  setInterval(async()=>{show(elOnline,await readNum(NS+'/online/'));},20000);
+})();
 
 const translations={
- ru:{title:"✦ ШТАБ ТРЕНЕРА ✦",labelArmy:"ЮНИТОВ НА 1 УДАР",labelBuyPrice:"ЦЕНА ПОКУПКИ 1 ЮНИТА",labelRezPrice:"ЦЕНА ВОСКРЕШЕНИЯ 1 ЮНИТА",titleLosses:"ТРЕНЕР · ПОТЕРИ",lossPerRoundLabel:"Потери за 1 раунд",lossesForBuildLabel:"За 10 раундов (для постройки)",lossesForRezLabel:"За 11 раундов (для воскрешения)",titleRestore:"ТРЕНЕР · ВОССТАНОВЛЕНИЕ",needToBuildLabel:"Нужно построить",buyCostLabel:"Стоимость покупки",rezCostLabel:"Стоимость воскрешения (75%)",trainerFeeLabel:"НАЦЕНКА ТРЕНЕРА",feeAmountLabel:"➕ Сумма наценки",totalLabel:"💰 ОБЩАЯ СТОИМОСТЬ",playersTitle:"ИГРОКИ",playersHint:"Клик по плашке — подставить значение",addBtn:"＋ Добавить",namePh:"Имя (напр. Цыганёнок)",horsesPh:"Юнитов (напр. 300000)",donateLabel:"Поддержать проект",visitsLabel:"всего посещений"},
- en:{title:"✦ TRAINER'S HQ ✦",labelArmy:"UNITS PER 1 ATTACK",labelBuyPrice:"PURCHASE PRICE PER 1 UNIT",labelRezPrice:"RESURRECTION PRICE PER 1 UNIT",titleLosses:"TRAINER · LOSSES",lossPerRoundLabel:"Losses per round",lossesForBuildLabel:"For 10 rounds (for construction)",lossesForRezLabel:"For 11 rounds (for resurrection)",titleRestore:"TRAINER · RESTORATION",needToBuildLabel:"Need to build",buyCostLabel:"Purchase cost",rezCostLabel:"Resurrection cost (75%)",trainerFeeLabel:"TRAINER'S MARKUP",feeAmountLabel:"➕ Markup amount",totalLabel:"💰 TOTAL COST",playersTitle:"PLAYERS",playersHint:"Click a card to load its value",addBtn:"＋ Add",namePh:"Name (e.g. Gypsy)",horsesPh:"Units (e.g. 300000)",donateLabel:"Support the project",visitsLabel:"total visits"},
+ ru:{title:"✦ ШТАБ ТРЕНЕРА ✦",labelArmy:"ЮНИТОВ НА 1 УДАР",labelBuyPrice:"ЦЕНА ПОКУПКИ 1 ЮНИТА",labelRezPrice:"ЦЕНА ВОСКРЕШЕНИЯ 1 ЮНИТА",titleLosses:"ТРЕНЕР · ПОТЕРИ",lossPerRoundLabel:"Потери за 1 раунд",lossesForBuildLabel:"За 10 раундов (для постройки)",lossesForRezLabel:"За 11 раундов (для воскрешения)",titleRestore:"ТРЕНЕР · ВОССТАНОВЛЕНИЕ",needToBuildLabel:"Нужно построить",buyCostLabel:"Стоимость покупки",rezCostLabel:"Стоимость воскрешения (75%)",trainerFeeLabel:"НАЦЕНКА ТРЕНЕРА",feeAmountLabel:"➕ Сумма наценки",totalLabel:"💰 ОБЩАЯ СТОИМОСТЬ",playersTitle:"ИГРОКИ",playersHint:"Клик по плашке — подставить значение",addBtn:"＋ Добавить",namePh:"Имя (напр. Цыганёнок)",horsesPh:"Юнитов (напр. 300000)",donateLabel:"Поддержать проект",visitsLabel:"игроков",onlineLabel:"онлайн"},
+ en:{title:"✦ TRAINER'S HQ ✦",labelArmy:"UNITS PER 1 ATTACK",labelBuyPrice:"PURCHASE PRICE PER 1 UNIT",labelRezPrice:"RESURRECTION PRICE PER 1 UNIT",titleLosses:"TRAINER · LOSSES",lossPerRoundLabel:"Losses per round",lossesForBuildLabel:"For 10 rounds (for construction)",lossesForRezLabel:"For 11 rounds (for resurrection)",titleRestore:"TRAINER · RESTORATION",needToBuildLabel:"Need to build",buyCostLabel:"Purchase cost",rezCostLabel:"Resurrection cost (75%)",trainerFeeLabel:"TRAINER'S MARKUP",feeAmountLabel:"➕ Markup amount",totalLabel:"💰 TOTAL COST",playersTitle:"PLAYERS",playersHint:"Click a card to load its value",addBtn:"＋ Add",namePh:"Name (e.g. Gypsy)",horsesPh:"Units (e.g. 300000)",donateLabel:"Support the project",visitsLabel:"players",onlineLabel:"online"},
  es:{title:"✦ CUARTEL DEL ENTRENADOR ✦",labelArmy:"UNIDADES POR 1 ATAQUE",labelBuyPrice:"PRECIO DE COMPRA POR 1 UNIDAD",labelRezPrice:"PRECIO DE RESURRECCIÓN POR 1 UNIDAD",titleLosses:"ENTRENADOR · PÉRDIDAS",lossPerRoundLabel:"Pérdidas por ronda",lossesForBuildLabel:"Por 10 rondas (para construcción)",lossesForRezLabel:"Por 11 rondas (para resurrección)",titleRestore:"ENTRENADOR · RESTAURACIÓN",needToBuildLabel:"Necesario construir",buyCostLabel:"Costo de compra",rezCostLabel:"Costo de resurrección (75%)",trainerFeeLabel:"RECARGO DEL ENTRENADOR",feeAmountLabel:"➕ Monto del recargo",totalLabel:"💰 COSTO TOTAL",donateLabel:"Apoyar el proyecto"},
  it:{title:"✦ QG DELL'ALLENATORE ✦",labelArmy:"UNITÀ PER 1 ATTACCO",labelBuyPrice:"PREZZO D'ACQUISTO PER 1 UNITÀ",labelRezPrice:"PREZZO DI RESURREZIONE PER 1 UNITÀ",titleLosses:"ALLENATORE · PERDITE",lossPerRoundLabel:"Perdite per round",lossesForBuildLabel:"Per 10 round (per la costruzione)",lossesForRezLabel:"Per 11 round (per la resurrezione)",titleRestore:"ALLENATORE · RESTAURO",needToBuildLabel:"Necessario costruire",buyCostLabel:"Costo d'acquisto",rezCostLabel:"Costo di resurrezione (75%)",trainerFeeLabel:"MARGINE DELL'ALLENATORE",feeAmountLabel:"➕ Importo del margine",totalLabel:"💰 COSTO TOTALE",donateLabel:"Sostieni il progetto"},
  fr:{title:"✦ QG DE L'ENTRAÎNEUR ✦",labelArmy:"UNITÉS PAR 1 ATTAQUE",labelBuyPrice:"PRIX D'ACHAT POUR 1 UNITÉ",labelRezPrice:"PRIX DE RÉSURRECTION POUR 1 UNITÉ",titleLosses:"ENTRAÎNEUR · PERTES",lossPerRoundLabel:"Pertes par round",lossesForBuildLabel:"Pour 10 rounds (pour la construction)",lossesForRezLabel:"Pour 11 rounds (pour la résurrection)",titleRestore:"ENTRAÎNEUR · RESTAURATION",needToBuildLabel:"À construire",buyCostLabel:"Coût d'achat",rezCostLabel:"Coût de résurrection (75%)",trainerFeeLabel:"MARGE DE L'ENTRAÎNEUR",feeAmountLabel:"➕ Montant de la marge",totalLabel:"💰 COÛT TOTAL",donateLabel:"Soutenir le projet"},
@@ -180,7 +205,7 @@ const translations={
 };
 let currentLang='ru';
 function tr(k){return (translations[currentLang]&&translations[currentLang][k])||translations.en[k]||translations.ru[k]||k;}
-const textKeys=["title","labelArmy","labelBuyPrice","labelRezPrice","titleLosses","lossPerRoundLabel","lossesForBuildLabel","lossesForRezLabel","titleRestore","needToBuildLabel","buyCostLabel","rezCostLabel","trainerFeeLabel","feeAmountLabel","totalLabel","playersTitle","playersHint","donateLabel","visitsLabel"];
+const textKeys=["title","labelArmy","labelBuyPrice","labelRezPrice","titleLosses","lossPerRoundLabel","lossesForBuildLabel","lossesForRezLabel","titleRestore","needToBuildLabel","buyCostLabel","rezCostLabel","trainerFeeLabel","feeAmountLabel","totalLabel","playersTitle","playersHint","donateLabel","visitsLabel","onlineLabel"];
 function setLanguage(lang){currentLang=lang;
   textKeys.forEach(k=>{const el=document.getElementById(k);if(el)el.innerText=tr(k);});
   document.getElementById('addBtn').innerText=tr('addBtn');

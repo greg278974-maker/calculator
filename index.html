@@ -165,36 +165,43 @@ hr{border:none;border-top:1px solid var(--line);margin:16px 0}
   </div>
 </div>
 
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
 <script>
-/* ===== счётчики: уникальные ПО IP + онлайн (присутствие) ===== */
+/* ===== ТОЧНЫЕ счётчики: Firebase Realtime Database ===== */
 (function(){
-  const NS='https://api.counterapi.dev/v1/shtab-trenera';
-  const NSIP='https://api.counterapi.dev/v1/shtab-trenera-ip';
   const elTotal=document.getElementById('totalVisits'), elOnline=document.getElementById('onlineNow');
+  function show(el,n){if(el)el.textContent=(n==null)?'—':Number(n).toLocaleString('ru-RU');}
   function hash(s){let h=5381;for(let i=0;i<s.length;i++)h=((h<<5)+h+s.charCodeAt(i))>>>0;return h.toString(36);}
-  async function readNum(url){try{const r=await fetch(url);const d=await r.json();return (d&&typeof d.count==='number')?d.count:null;}catch(e){return null;}}
-  function show(el,n){if(el)el.textContent=(n==null)?'—':n.toLocaleString('ru-RU');}
+  try{
+    firebase.initializeApp({
+      apiKey:"AIzaSyAjcQfl9dS5dGXLjQc9WAmN4NhHmPWfWQc",
+      authDomain:"shtab-trenera.firebaseapp.com",
+      databaseURL:"https://shtab-trenera-default-rtdb.firebaseio.com",
+      projectId:"shtab-trenera",
+      storageBucket:"shtab-trenera.firebasestorage.app",
+      messagingSenderId:"726655069347",
+      appId:"1:726655069347:web:81a9183576ecf22d8d2316"
+    });
+    const db=firebase.database();
 
-  // 1) уникальные по IP: +1 к общему только при ПЕРВОМ заходе с этого IP
-  (async function(){
-    let ipk='anon';
-    try{const r=await fetch('https://api.ipify.org?format=json');const j=await r.json();if(j&&j.ip)ipk='ip'+hash(j.ip);}catch(e){}
-    const c=await readNum(NSIP+'/'+ipk+'/up');
-    if(c===1){await fetch(NS+'/uniques/up').catch(()=>{});}
-    show(elTotal, await readNum(NS+'/uniques/'));
-  })();
+    // ОНЛАЙН — точное присутствие: сервер удаляет узел при отключении (onDisconnect)
+    const meRef=db.ref('online').push();
+    db.ref('.info/connected').on('value',s=>{
+      if(s.val()){ meRef.onDisconnect().remove(); meRef.set(true); }
+    });
+    db.ref('online').on('value',s=>show(elOnline, s.numChildren()));
 
-  // 2) онлайн: тайм-бакеты — само-очищается, рефреш НЕ накручивает
-  const BUCKET_MS=60000;
-  const bid=()=>Math.floor(Date.now()/BUCKET_MS);
-  async function heartbeat(){
-    const b=bid();
-    let last=null;try{last=sessionStorage.getItem('shtab_hb');}catch(e){}
-    if(String(b)!==last){try{sessionStorage.setItem('shtab_hb',String(b));}catch(e){}fetch(NS+'/on'+b+'/up').catch(()=>{});}
-    const res=await Promise.all([readNum(NS+'/on'+b+'/'),readNum(NS+'/on'+(b-1)+'/')]);
-    show(elOnline, Math.max(res[0]||0, res[1]||0, 1));
-  }
-  heartbeat(); setInterval(heartbeat, 15000);
+    // ИГРОКОВ — точные уникальные по IP (инкремент только при первом IP)
+    db.ref('stats/unique').on('value',s=>show(elTotal, s.val()||0));
+    (async function(){
+      let key=null;
+      try{const r=await fetch('https://api.ipify.org?format=json');const j=await r.json();if(j&&j.ip)key='ip'+hash(j.ip);}catch(e){}
+      if(!key){try{key=localStorage.getItem('shtab_cid');if(!key){key='cid'+hash(String(Date.now())+navigator.userAgent);localStorage.setItem('shtab_cid',key);}}catch(_){key='anon';}}
+      const ipRef=db.ref('ips/'+key);
+      ipRef.once('value').then(snap=>{ if(!snap.exists()){ ipRef.set(true); db.ref('stats/unique').transaction(n=>(n||0)+1); } });
+    })();
+  }catch(e){ show(elTotal,null); show(elOnline,null); }
 })();
 
 const translations={

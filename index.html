@@ -184,14 +184,17 @@ hr{border:none;border-top:1px solid var(--line);margin:16px 0}
     show(elTotal, await readNum(NS+'/uniques/'));
   })();
 
-  // 2) онлайн: +1 при появлении вкладки, -1 при уходе/закрытии
-  let added=false;
-  async function up(){if(added)return;added=true;await fetch(NS+'/online/up').catch(()=>{});show(elOnline,await readNum(NS+'/online/'));}
-  function down(){if(!added)return;added=false;try{fetch(NS+'/online/down',{keepalive:true});}catch(e){}}
-  document.addEventListener('visibilitychange',()=>{document.hidden?down():up();});
-  window.addEventListener('pagehide',down);
-  if(!document.hidden)up();
-  setInterval(async()=>{show(elOnline,await readNum(NS+'/online/'));},20000);
+  // 2) онлайн: тайм-бакеты — само-очищается, рефреш НЕ накручивает
+  const BUCKET_MS=60000;
+  const bid=()=>Math.floor(Date.now()/BUCKET_MS);
+  async function heartbeat(){
+    const b=bid();
+    let last=null;try{last=sessionStorage.getItem('shtab_hb');}catch(e){}
+    if(String(b)!==last){try{sessionStorage.setItem('shtab_hb',String(b));}catch(e){}fetch(NS+'/on'+b+'/up').catch(()=>{});}
+    const res=await Promise.all([readNum(NS+'/on'+b+'/'),readNum(NS+'/on'+(b-1)+'/')]);
+    show(elOnline, Math.max(res[0]||0, res[1]||0, 1));
+  }
+  heartbeat(); setInterval(heartbeat, 15000);
 })();
 
 const translations={

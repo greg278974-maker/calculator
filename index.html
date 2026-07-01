@@ -185,12 +185,19 @@ hr{border:none;border-top:1px solid var(--line);margin:16px 0}
     });
     const db=firebase.database();
 
-    // ОНЛАЙН — точное присутствие: сервер удаляет узел при отключении (onDisconnect)
+    // ОНЛАЙН — присутствие: heartbeat-метка + onDisconnect + отсев устаревших (без дрейфа)
+    let offset=0;
+    db.ref('.info/serverTimeOffset').on('value',s=>{offset=s.val()||0;});
     const meRef=db.ref('online').push();
-    db.ref('.info/connected').on('value',s=>{
-      if(s.val()){ meRef.onDisconnect().remove(); meRef.set(true); }
+    const beat=()=>{ try{meRef.set(firebase.database.ServerValue.TIMESTAMP);}catch(e){} };
+    db.ref('.info/connected').on('value',s=>{ if(s.val()){ meRef.onDisconnect().remove(); beat(); } });
+    setInterval(beat, 25000);
+    db.ref('online').on('value',s=>{
+      const now=Date.now()+offset; let n=0;
+      s.forEach(ch=>{ const t=ch.val();
+        if(typeof t==='number'){ if(now-t<70000) n++; else if(now-t>300000) ch.ref.remove(); } });
+      show(elOnline, Math.max(n,1));
     });
-    db.ref('online').on('value',s=>show(elOnline, s.numChildren()));
 
     // ИГРОКОВ — точные уникальные по IP (инкремент только при первом IP)
     db.ref('stats/unique').on('value',s=>show(elTotal, s.val()||0));
